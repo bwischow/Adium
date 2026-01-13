@@ -1,0 +1,42 @@
+{
+  "name": "adium-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Adium ads benchmarking platform",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": ["ads", "benchmarking", "analytics"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "@prisma/client": "^5.8.0",
+    "google-ads-api": "^14.0.0",
+    "facebook-nodejs-business-sdk": "^19.0.0",
+    "axios": "^1.6.5",
+    "express-validator": "^7.0.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/node": "^20.11.0",
+    "@types/morgan": "^1.9.9",
+    "typescript": "^5.3.3",
+    "ts-node-dev": "^2.0.0",
+    "prisma": "^5.8.0"
+  }
+}
