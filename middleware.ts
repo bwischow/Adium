@@ -19,7 +19,6 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
-          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -29,7 +28,17 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh the session — required for Server Components
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
+  const user = data.user
+
+  console.log(
+    '[mw]',
+    request.nextUrl.pathname,
+    'user:',
+    user?.id,
+    'error:',
+    error?.message
+  )
 
   const { pathname } = request.nextUrl
 

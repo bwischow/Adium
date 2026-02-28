@@ -47,8 +47,8 @@ export default function LoginPage() {
       }
 
       console.log('[Login Page] SUCCESS! Navigating to dashboard...')
-      // Cookies are now set server-side, navigate to dashboard
-      router.push('/dashboard')
+      // Cookies are now set server-side, do full reload to ensure middleware sees them
+      window.location.assign('/dashboard')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
       console.log('[Login Page] EXCEPTION:', errorMessage)
