@@ -22,22 +22,19 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh the session — required for Server Components
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
   // Debug logging
+  const sbCookies = request.cookies.getAll().filter(c => c.name.startsWith('sb-'))
   console.log('[Middleware]', {
     pathname,
+    hasSbCookies: sbCookies.length > 0,
+    sbCookieCount: sbCookies.length,
     hasUser: !!user,
-    userId: user?.id,
-    error: error?.message,
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 30) + '...'
+    userId: user?.id
   })
-
-  // Add debug header
-  supabaseResponse.headers.set('X-Middleware-User', user ? 'authenticated' : 'anonymous')
-  supabaseResponse.headers.set('X-Middleware-Path', pathname)
 
   // Allow auth callback to pass through without authentication check
   if (pathname.startsWith('/auth/callback')) {
@@ -50,12 +47,26 @@ export async function middleware(request: NextRequest) {
 
   if (isProtected && !user) {
     console.log('[Middleware] Redirecting to login - protected route without user')
-    return NextResponse.redirect(new URL('/login', request.url))
+    const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
+
+    // Copy all cookies from supabaseResponse to redirect response
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+
+    return redirectResponse
   }
 
   if (isAuthPage && user) {
     console.log('[Middleware] Redirecting to dashboard - auth page with user')
-    return NextResponse.redirect(new URL('/dashboard', request.url))
+    const redirectResponse = NextResponse.redirect(new URL('/dashboard', request.url))
+
+    // Copy all cookies from supabaseResponse to redirect response
+    supabaseResponse.cookies.getAll().forEach(cookie => {
+      redirectResponse.cookies.set(cookie.name, cookie.value)
+    })
+
+    return redirectResponse
   }
 
   return supabaseResponse
