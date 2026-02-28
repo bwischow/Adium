@@ -46,9 +46,12 @@ export async function POST(request: Request) {
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll()
+            const existingCookies = cookieStore.getAll()
+            console.log('[Login API] getAll() called, returning:', existingCookies.map(c => c.name))
+            return existingCookies
           },
           setAll(cookies) {
+            console.log('[Login API] setAll() called with', cookies.length, 'cookies:', cookies.map(c => c.name))
             // Collect cookies to set on final response
             cookies.forEach(({ name, value, options }) => {
               cookiesToSet.push({
