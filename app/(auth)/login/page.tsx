@@ -44,8 +44,8 @@ export default function LoginPage() {
       setLoading(false)
     } else {
       console.log('[Login] Success! Redirecting to dashboard...')
-      // Force a hard navigation to ensure cookies are set
-      window.location.href = '/dashboard'
+      router.replace('/dashboard')
+      router.refresh()
     }
   }
 
