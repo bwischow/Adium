@@ -34,6 +34,9 @@ export async function POST(request: Request) {
       )
     }
 
+    // Get existing cookies using Next.js cookies() helper
+    const cookieStore = await cookies()
+
     // Collect cookies that Supabase wants to set
     const cookiesToSet: Array<{ name: string; value: string; options?: any }> = []
 
@@ -43,7 +46,7 @@ export async function POST(request: Request) {
       {
         cookies: {
           getAll() {
-            return request.cookies.getAll()
+            return cookieStore.getAll()
           },
           setAll(cookies) {
             // Collect cookies to set on final response
