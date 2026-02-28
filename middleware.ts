@@ -39,6 +39,10 @@ export async function middleware(request: NextRequest) {
     url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 30) + '...'
   })
 
+  // Add debug header
+  supabaseResponse.headers.set('X-Middleware-User', user ? 'authenticated' : 'anonymous')
+  supabaseResponse.headers.set('X-Middleware-Path', pathname)
+
   // Allow auth callback to pass through without authentication check
   if (pathname.startsWith('/auth/callback')) {
     return supabaseResponse
