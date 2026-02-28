@@ -109,9 +109,20 @@ export async function POST(request: Request) {
 
     console.log('[Login API] SUCCESS: Session created')
     console.log('[Login API] User:', { id: data.user?.id, email: data.user?.email })
-    console.log('[Login API] Cookies should be set automatically via cookieStore')
 
-    // Cookies are automatically set via cookieStore.set() in setAll callback
+    // Explicitly set the session to trigger cookie storage
+    console.log('[Login API] Explicitly calling setSession to trigger cookie storage...')
+    const { error: setSessionError } = await supabase.auth.setSession({
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+    })
+
+    if (setSessionError) {
+      console.log('[Login API] setSession ERROR:', setSessionError.message)
+    } else {
+      console.log('[Login API] setSession successful, cookies should now be set')
+    }
+
     // Return success response
     return NextResponse.json({
       success: true,
