@@ -34,32 +34,27 @@ export async function POST(request: Request) {
       )
     }
 
-    // Get existing cookies using Next.js cookies() helper
     const cookieStore = await cookies()
 
-    // Collect cookies that Supabase wants to set
-    const cookiesToSet: Array<{ name: string; value: string; options?: any }> = []
-
+    // Use the official Route Handler pattern - cookieStore.set() is automatic
     const supabase = createServerClient(
       SUPABASE_URL,
       SUPABASE_ANON_KEY,
       {
         cookies: {
           getAll() {
-            const existingCookies = cookieStore.getAll()
-            console.log('[Login API] getAll() called, returning:', existingCookies.map(c => c.name))
-            return existingCookies
+            return cookieStore.getAll()
           },
-          setAll(cookies) {
-            console.log('[Login API] setAll() called with', cookies.length, 'cookies:', cookies.map(c => c.name))
-            // Collect cookies to set on final response
-            cookies.forEach(({ name, value, options }) => {
-              cookiesToSet.push({
-                name,
-                value,
-                options: { ...options, path: '/' }
+          setAll(cookiesToSet) {
+            console.log('[Login API] setAll() called with', cookiesToSet.length, 'cookies')
+            try {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                console.log('[Login API] Setting cookie:', name)
+                cookieStore.set(name, value, options)
               })
-            })
+            } catch (error) {
+              console.error('[Login API] Error in setAll:', error)
+            }
           },
         },
       }
@@ -112,25 +107,19 @@ export async function POST(request: Request) {
       )
     }
 
-    console.log('[Login API] SUCCESS: Session created, cookies set')
+    console.log('[Login API] SUCCESS: Session created')
     console.log('[Login API] User:', { id: data.user?.id, email: data.user?.email })
-    console.log('[Login API] Cookies to set:', cookiesToSet.map(c => c.name))
+    console.log('[Login API] Cookies should be set automatically via cookieStore')
 
-    // Create success response and set all cookies on it
-    const response = NextResponse.json({
+    // Cookies are automatically set via cookieStore.set() in setAll callback
+    // Return success response
+    return NextResponse.json({
       success: true,
       user: {
         id: data.user?.id,
         email: data.user?.email,
       },
     })
-
-    // Set all collected cookies on the response
-    cookiesToSet.forEach(({ name, value, options }) => {
-      response.cookies.set(name, value, options)
-    })
-
-    return response
   } catch (err) {
     console.log('[Login API] EXCEPTION:', err)
     return NextResponse.json(
