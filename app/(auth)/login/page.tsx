@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
+// Add diagnostic to see if JS loads at all
+console.log('[Login Page] JavaScript is loading')
+
 export default function LoginPage() {
+  console.log('[Login Page] Component is rendering')
+
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
