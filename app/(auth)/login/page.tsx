@@ -20,6 +20,8 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
+    console.log('[Login Page] Submitting login...')
+
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -29,15 +31,28 @@ export default function LoginPage() {
 
       const data = await response.json()
 
+      console.log('[Login Page] Response:', {
+        status: response.status,
+        ok: response.ok,
+        data,
+      })
+
       if (!response.ok) {
-        setError(data.error || 'Login failed')
+        const errorCode = data.code || 'UNKNOWN_ERROR'
+        const errorMessage = data.error || 'Login failed'
+
+        console.log('[Login Page] ERROR:', { code: errorCode, message: errorMessage })
+        setError(`[${errorCode}] ${errorMessage}`)
         return
       }
 
+      console.log('[Login Page] SUCCESS! Navigating to dashboard...')
       // Cookies are now set server-side, navigate to dashboard
       router.push('/dashboard')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
+      console.log('[Login Page] EXCEPTION:', errorMessage)
+      setError(`[NETWORK_ERROR] ${errorMessage}`)
     } finally {
       setLoading(false)
     }
