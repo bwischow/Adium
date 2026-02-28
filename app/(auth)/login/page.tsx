@@ -24,6 +24,8 @@ export default function LoginPage() {
     console.log('[Login] Sign in response:', {
       hasSession: !!data.session,
       hasUser: !!data.user,
+      userEmail: data.user?.email,
+      emailConfirmed: data.user?.email_confirmed_at,
       error: error?.message
     })
 
@@ -31,10 +33,14 @@ export default function LoginPage() {
       console.log('[Login] Error:', error.message)
       setError(error.message)
       setLoading(false)
+    } else if (!data.session) {
+      console.log('[Login] No session created - email may need confirmation')
+      setError('Please check your email to confirm your account before signing in.')
+      setLoading(false)
     } else {
       console.log('[Login] Success! Redirecting to dashboard...')
-      router.push('/dashboard')
-      router.refresh()
+      // Force a hard navigation to ensure cookies are set
+      window.location.href = '/dashboard'
     }
   }
 
