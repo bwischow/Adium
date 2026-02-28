@@ -26,9 +26,18 @@ export async function middleware(request: NextRequest) {
   )
 
   // Refresh the session — required for Server Components
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
+
+  // Debug logging
+  console.log('[Middleware]', {
+    pathname,
+    hasUser: !!user,
+    userId: user?.id,
+    error: error?.message,
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL?.slice(0, 30) + '...'
+  })
 
   // Allow auth callback to pass through without authentication check
   if (pathname.startsWith('/auth/callback')) {
@@ -40,10 +49,12 @@ export async function middleware(request: NextRequest) {
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup')
 
   if (isProtected && !user) {
+    console.log('[Middleware] Redirecting to login - protected route without user')
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   if (isAuthPage && user) {
+    console.log('[Middleware] Redirecting to dashboard - auth page with user')
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

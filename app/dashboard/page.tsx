@@ -5,9 +5,18 @@ import type { Company } from '@/types'
 
 export default async function DashboardPage() {
   const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { user }, error } = await supabase.auth.getUser()
 
-  if (!user) redirect('/login')
+  console.log('[Dashboard]', {
+    hasUser: !!user,
+    userId: user?.id,
+    error: error?.message
+  })
+
+  if (!user) {
+    console.log('[Dashboard] Redirecting to login - no user found')
+    redirect('/login')
+  }
 
   const { data: companies } = await supabase
     .from('companies')
