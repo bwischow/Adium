@@ -1,18 +1,28 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. Set them in .env.local.')
+}
+
 export async function middleware(request: NextRequest) {
-  const supabaseResponse = NextResponse.next({ request })
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_URL as string,
+    SUPABASE_ANON_KEY as string,
     {
       cookies: {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -26,47 +36,27 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  // Debug logging
-  const sbCookies = request.cookies.getAll().filter(c => c.name.startsWith('sb-'))
-  console.log('[Middleware]', {
-    pathname,
-    hasSbCookies: sbCookies.length > 0,
-    sbCookieCount: sbCookies.length,
-    hasUser: !!user,
-    userId: user?.id
-  })
-
-  // Allow auth callback to pass through without authentication check
   if (pathname.startsWith('/auth/callback')) {
     return supabaseResponse
   }
 
-  // Redirect unauthenticated users away from protected routes
   const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/companies')
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup')
 
   if (isProtected && !user) {
-    console.log('[Middleware] Redirecting to login - protected route without user')
-    const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
-
-    // Copy all cookies from supabaseResponse to redirect response
-    supabaseResponse.cookies.getAll().forEach(cookie => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
-    })
-
-    return redirectResponse
+    const redirect = NextResponse.redirect(new URL('/login', request.url))
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
+      redirect.cookies.set(name, value)
+    )
+    return redirect
   }
 
   if (isAuthPage && user) {
-    console.log('[Middleware] Redirecting to dashboard - auth page with user')
-    const redirectResponse = NextResponse.redirect(new URL('/dashboard', request.url))
-
-    // Copy all cookies from supabaseResponse to redirect response
-    supabaseResponse.cookies.getAll().forEach(cookie => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
-    })
-
-    return redirectResponse
+    const redirect = NextResponse.redirect(new URL('/dashboard', request.url))
+    supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
+      redirect.cookies.set(name, value)
+    )
+    return redirect
   }
 
   return supabaseResponse

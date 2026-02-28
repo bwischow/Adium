@@ -51,8 +51,19 @@ export async function GET(request: Request) {
     }
   )
 
-  const customerData = await customerRes.json()
-  const resourceNames: string[] = customerData.resourceNames ?? []
+  if (!customerRes.ok) {
+    console.error('listAccessibleCustomers failed:', customerRes.status, await customerRes.text())
+    return NextResponse.redirect(`${origin}/companies/${companyId}/connect?status=error`)
+  }
+
+  let resourceNames: string[] = []
+  try {
+    const customerData = await customerRes.json()
+    resourceNames = Array.isArray(customerData?.resourceNames) ? customerData.resourceNames : []
+  } catch {
+    console.error('listAccessibleCustomers: invalid JSON response')
+    return NextResponse.redirect(`${origin}/companies/${companyId}/connect?status=error`)
+  }
 
   const supabase = createServiceClient()
 

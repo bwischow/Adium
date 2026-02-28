@@ -1,21 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
-// Add diagnostic to see if JS loads at all
-console.log('[Login Page] JavaScript is loading')
-
 export default function LoginPage() {
-  console.log('[Login Page] Component is rendering')
-
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,29 +16,25 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    console.log('[Login] Attempting sign in...')
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-    console.log('[Login] Sign in response:', {
-      hasSession: !!data.session,
-      hasUser: !!data.user,
-      userEmail: data.user?.email,
-      emailConfirmed: data.user?.email_confirmed_at,
-      error: error?.message
-    })
+      if (error) {
+        setError(error.message)
+        return
+      }
+      if (!data.session) {
+        setError('Please check your email to confirm your account before signing in.')
+        return
+      }
 
-    if (error) {
-      console.log('[Login] Error:', error.message)
-      setError(error.message)
+      // Full page load so the server receives the new session cookies
+      await new Promise((r) => setTimeout(r, 200))
+      window.location.href = '/dashboard'
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
       setLoading(false)
-    } else if (!data.session) {
-      console.log('[Login] No session created - email may need confirmation')
-      setError('Please check your email to confirm your account before signing in.')
-      setLoading(false)
-    } else {
-      console.log('[Login] Success! Redirecting to dashboard...')
-      router.replace('/dashboard')
-      router.refresh()
     }
   }
 
