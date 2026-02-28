@@ -34,7 +34,8 @@ export async function POST(request: Request) {
       )
     }
 
-    const cookieStore = await cookies()
+    // Collect cookies that Supabase wants to set
+    const cookiesToSet: Array<{ name: string; value: string; options?: any }> = []
 
     const supabase = createServerClient(
       SUPABASE_URL,
@@ -42,14 +43,15 @@ export async function POST(request: Request) {
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll()
+            return request.cookies.getAll()
           },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              // Ensure cookies have path="/" so they're accessible site-wide
-              cookieStore.set(name, value, {
-                ...options,
-                path: '/',
+          setAll(cookies) {
+            // Collect cookies to set on final response
+            cookies.forEach(({ name, value, options }) => {
+              cookiesToSet.push({
+                name,
+                value,
+                options: { ...options, path: '/' }
               })
             })
           },
@@ -106,14 +108,23 @@ export async function POST(request: Request) {
 
     console.log('[Login API] SUCCESS: Session created, cookies set')
     console.log('[Login API] User:', { id: data.user?.id, email: data.user?.email })
+    console.log('[Login API] Cookies to set:', cookiesToSet.map(c => c.name))
 
-    return NextResponse.json({
+    // Create success response and set all cookies on it
+    const response = NextResponse.json({
       success: true,
       user: {
         id: data.user?.id,
         email: data.user?.email,
       },
     })
+
+    // Set all collected cookies on the response
+    cookiesToSet.forEach(({ name, value, options }) => {
+      response.cookies.set(name, value, options)
+    })
+
+    return response
   } catch (err) {
     console.log('[Login API] EXCEPTION:', err)
     return NextResponse.json(
