@@ -8,6 +8,9 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 }
 
 export async function middleware(request: NextRequest) {
+  // Debug: show incoming cookies
+  console.log('[mw] cookies:', request.cookies.getAll().map(c => c.name))
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -19,9 +22,12 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
-          cookiesToSet.forEach(({ name, value, options }) =>
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Set on request so Supabase can read it on this request
+            request.cookies.set(name, value)
+            // Set on response so browser receives it
             supabaseResponse.cookies.set(name, value, options)
-          )
+          })
         },
       },
     }

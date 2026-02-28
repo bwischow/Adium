@@ -45,9 +45,13 @@ export async function POST(request: Request) {
             return cookieStore.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // Ensure cookies have path="/" so they're accessible site-wide
+              cookieStore.set(name, value, {
+                ...options,
+                path: '/',
+              })
+            })
           },
         },
       }
