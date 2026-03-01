@@ -23,11 +23,15 @@ export function createClient() {
           return cookieStore.getAll()
         },
         setAll(cookiesToSet) {
+          console.log('[setAll] CALLED with', cookiesToSet.length, 'cookies')
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
+            cookiesToSet.forEach(({ name, value, options }) => {
+              console.log('[setAll] Setting cookie:', name)
               cookieStore.set(name, value, options)
-            )
-          } catch {
+            })
+            console.log('[setAll] SUCCESS: All cookies set')
+          } catch (error) {
+            console.log('[setAll] ERROR:', error instanceof Error ? error.message : error)
             // Called from a Server Component — cookies will be set by middleware
           }
         },
