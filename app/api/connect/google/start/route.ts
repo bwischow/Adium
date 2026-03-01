@@ -2,6 +2,17 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
+  const missingVars = ['GOOGLE_ADS_CLIENT_ID', 'GOOGLE_ADS_REDIRECT_URI'].filter(
+    key => !process.env[key]
+  )
+  if (missingVars.length > 0) {
+    console.error('Missing Google Ads env vars:', missingVars)
+    return NextResponse.json(
+      { error: `Missing environment variables: ${missingVars.join(', ')}` },
+      { status: 500 }
+    )
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
