@@ -1,0 +1,426 @@
+# Ad Benchmark — Product Specification
+
+**Glassdoor for Paid Marketing Data**
+
+Version 1.0 | February 2026
+Prepared for development handoff to Claude Code
+
+---
+
+## 1. Product Overview
+
+Ad Benchmark is a SaaS application that lets advertisers see how their paid media performance compares to aggregated peers. Users connect their Google Ads and Meta Ads accounts via OAuth, and the platform ingests their performance data, calculates benchmarks by industry and spend tier, and displays the comparison in simple line charts.
+
+**Core value proposition:** "Am I doing better or worse than similar companies spending similar amounts on the same platform?"
+
+### Target Users
+
+- Agency owners managing multiple client ad accounts
+- Startup founders / marketing leads running their own ads
+- Freelance media buyers benchmarking their work
+
+---
+
+## 2. Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js (TypeScript) — frontend + API routes |
+| Database | Supabase (Postgres) — data, auth, cron via pg_cron |
+| Hosting | Vercel |
+| Charts | Recharts |
+| Auth | Supabase Auth (magic link or Google OAuth) |
+| Ad Platform APIs | Google Ads API (REST), Meta Marketing API (Graph API) |
+
+---
+
+## 3. User Model
+
+The user model is intentionally simple for V1. One user, one login. No roles, no team access, no multi-user orgs.
+
+**User → many Companies → each has Industry + Ad Accounts**
+
+A user (e.g., an agency owner) logs in and sees a list of all their companies. Each company represents a client or business. Each company has one industry tag and one or more connected ad accounts (Google Ads, Meta Ads). The user selects a company and views that company's benchmarks.
+
+### Key Rules
+
+- Industry is set per company during onboarding (self-selected by user)
+- Spend tier is calculated automatically per ad account from trailing 30-day spend
+- Benchmarks are platform-specific (Google Ads benchmarks vs. Google Ads peers, Meta vs. Meta)
+- No company-to-company data sharing — all benchmarks are aggregated and anonymized
+
+---
+
+## 4. Industry Taxonomy (V1)
+
+The initial taxonomy is kept intentionally tight to maximize data density per segment. Industries can be added later as the user base grows.
+
+| ID | Industry | Examples |
+|----|----------|----------|
+| 1 | E-commerce / DTC | Shopify brands, consumer products, subscription boxes |
+| 2 | SaaS / Software | B2B SaaS, dev tools, productivity apps |
+| 3 | Local Services | Home services, legal, dental, HVAC, plumbing |
+| 4 | Healthcare / Wellness | Clinics, telehealth, supplements, fitness |
+| 5 | Financial Services | Fintech, insurance, lending, wealth management |
+| 6 | Education / EdTech | Online courses, bootcamps, tutoring platforms |
+| 7 | Real Estate | Brokerages, PropTech, property management |
+| 8 | Other | Catch-all for accounts that don't fit neatly |
+
+---
+
+## 5. Spend Tier Model
+
+Spend tiers are dynamic and percentile-based. Rather than hardcoded dollar ranges, accounts are grouped into quartiles within their industry and platform based on trailing 30-day spend.
+
+### Quartile Definitions
+
+| Tier | Percentile Range | Label in UI |
+|------|-----------------|-------------|
+| Q1 | 0th – 25th percentile | "Lower spend tier" |
+| Q2 | 25th – 50th percentile | "Mid-low spend tier" |
+| Q3 | 50th – 75th percentile | "Mid-high spend tier" |
+| Q4 | 75th – 100th percentile | "Top spend tier" |
+
+### Minimum Pool Rules
+
+- Quartile benchmarks require 20+ accounts in the same industry × platform segment
+- If fewer than 20 accounts exist, fall back to full-industry benchmarks (no spend tier split)
+- If fewer than 5 accounts exist in an industry × platform, show no benchmark — display "Not enough data yet for your industry"
+- Quartiles are recalculated nightly as part of the benchmark refresh job
+
+### Benchmark Key
+
+Every benchmark row is uniquely identified by the composite key:
+
+```
+platform × industry × spend_quartile × metric × date
+```
+
+---
+
+## 6. Metrics
+
+The platform stores raw metrics and derives calculated metrics at query time. This avoids stale or inconsistent data.
+
+### Raw Metrics (Stored)
+
+| Metric | Type | Source |
+|--------|------|--------|
+| `impressions` | integer | Direct from API |
+| `clicks` | integer | Direct from API |
+| `spend` | decimal | Direct from API (in account currency) |
+| `conversions` | decimal | Direct from API |
+| `conversion_value` | decimal | Direct from API (revenue attributed) |
+
+### Derived Metrics (Calculated on Read)
+
+| Metric | Formula | Notes |
+|--------|---------|-------|
+| `CPC` | `spend / clicks` | Cost per click |
+| `CPM` | `(spend / impressions) × 1000` | Cost per thousand impressions |
+| `CTR` | `clicks / impressions` | Click-through rate (displayed as %) |
+| `ROAS` | `conversion_value / spend` | Return on ad spend |
+| `CPA` | `spend / conversions` | Cost per acquisition/conversion |
+
+---
+
+## 7. Database Schema
+
+All tables live in Supabase (Postgres). UUIDs for all primary keys. Timestamps in UTC.
+
+### `users`
+
+Managed by Supabase Auth. Extended with a profile table.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | uuid (PK) | From Supabase Auth |
+| `email` | text (unique) | Login email |
+| `full_name` | text | Display name |
+| `created_at` | timestamptz | Auto-set |
+
+### `companies`
+
+Each company is a client/business the user manages. This is the core entity for benchmarking.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid (FK → users) | Owner of this company |
+| `name` | text | Display name (e.g. "PowerBroker AI") |
+| `industry_id` | int (FK → industries) | Self-selected during onboarding |
+| `created_at` | timestamptz | Auto-set |
+
+### `industries`
+
+Static lookup table. Seeded on deploy.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | serial (PK) | Auto-increment |
+| `name` | text | Display name |
+| `slug` | text (unique) | URL-safe identifier |
+
+### `ad_accounts`
+
+Each connected Google Ads or Meta Ads account. Belongs to a company.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | uuid (PK) | Auto-generated |
+| `company_id` | uuid (FK → companies) | Parent company |
+| `platform` | enum (google_ads, meta) | Ad platform |
+| `platform_account_id` | text | External account ID from the platform |
+| `account_name` | text | Display name from the platform |
+| `access_token` | text (encrypted) | OAuth access token |
+| `refresh_token` | text (encrypted) | OAuth refresh token |
+| `token_expires_at` | timestamptz | Token expiry for refresh logic |
+| `is_active` | boolean | Whether data is still being pulled |
+| `connected_at` | timestamptz | When the account was first connected |
+
+### `daily_metrics`
+
+Raw daily performance data pulled from ad platform APIs. One row per ad account per date. This is the source of truth for all benchmarking.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | uuid (PK) | Auto-generated |
+| `ad_account_id` | uuid (FK → ad_accounts) | Which account this data belongs to |
+| `date` | date | The calendar date for this data |
+| `impressions` | bigint | Total impressions |
+| `clicks` | bigint | Total clicks |
+| `spend` | numeric(12,2) | Total spend in account currency |
+| `conversions` | numeric(10,2) | Total conversions |
+| `conversion_value` | numeric(12,2) | Total conversion value / revenue |
+| `pulled_at` | timestamptz | When this data was fetched from the API |
+
+*Unique constraint on (ad_account_id, date) — upsert on each pull.*
+
+### `account_spend_tiers`
+
+Tracks each ad account's current spend quartile. Recalculated nightly.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | uuid (PK) | Auto-generated |
+| `ad_account_id` | uuid (FK → ad_accounts) | The account being tiered |
+| `industry_id` | int (FK → industries) | Denormalized for query speed |
+| `platform` | enum | Denormalized for query speed |
+| `quartile` | smallint (1-4) | Current spend quartile |
+| `trailing_30d_spend` | numeric(12,2) | Spend sum used for calculation |
+| `calculated_at` | timestamptz | When this tier was last calculated |
+
+### `benchmark_cache`
+
+Precomputed benchmark aggregates. Refreshed nightly after spend tiers are recalculated. This is what the dashboard reads from — no live aggregation queries.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | uuid (PK) | Auto-generated |
+| `industry_id` | int (FK → industries) | Industry segment |
+| `platform` | enum | google_ads or meta |
+| `spend_quartile` | smallint (nullable) | 1-4, or NULL for full-industry benchmark |
+| `date` | date | Calendar date |
+| `metric_name` | text | e.g. cpc, cpm, ctr, roas, cpa |
+| `avg_value` | numeric(12,4) | Mean across accounts in segment |
+| `median_value` | numeric(12,4) | Median (P50) |
+| `p25_value` | numeric(12,4) | 25th percentile |
+| `p75_value` | numeric(12,4) | 75th percentile |
+| `account_count` | int | Number of accounts in this segment |
+| `calculated_at` | timestamptz | When this benchmark was computed |
+
+*Unique constraint on (industry_id, platform, spend_quartile, date, metric_name).*
+
+---
+
+## 8. API Routes (Next.js API Routes)
+
+### Auth
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/auth/signup` | Create account via Supabase Auth |
+| POST | `/api/auth/login` | Login (magic link or OAuth) |
+
+### Companies
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/companies` | List all companies for logged-in user |
+| POST | `/api/companies` | Create a new company (name + industry) |
+| GET | `/api/companies/:id` | Get company details + connected accounts |
+| PUT | `/api/companies/:id` | Update company (name, industry) |
+
+### Ad Account Connections
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/connect/google/start` | Initiate Google Ads OAuth flow |
+| GET | `/api/connect/google/callback` | Handle OAuth callback, store tokens |
+| GET | `/api/connect/meta/start` | Initiate Meta Ads OAuth flow |
+| GET | `/api/connect/meta/callback` | Handle OAuth callback, store tokens |
+
+### Benchmarks / Dashboard Data
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/benchmarks/:accountId` | Get user's metrics + peer benchmarks for a specific ad account over a date range |
+
+*Query params: `metric` (cpc, cpm, ctr, roas, cpa), `start_date`, `end_date`. Returns two series: the user's daily values and the benchmark daily values for their segment.*
+
+---
+
+## 9. Nightly Job Pipeline
+
+A nightly pipeline runs via Supabase pg_cron (or a Vercel cron if pg_cron is insufficient). The jobs run in this order:
+
+1. **Data Pull** — For each active ad_account, call the Google Ads or Meta API to pull the previous day's metrics. Upsert into daily_metrics. Handle token refresh if access_token is expired.
+2. **Spend Tier Calculation** — For each industry × platform segment, calculate trailing 30-day spend per account, compute quartile boundaries, and update account_spend_tiers.
+3. **Benchmark Aggregation** — For each industry × platform × quartile × date, calculate avg, median, P25, P75 for each derived metric. Write to benchmark_cache. Also compute full-industry (no quartile) benchmarks as fallback.
+
+### Error Handling
+
+- If a token refresh fails, mark the ad_account as `is_active = false` and notify the user (email or in-app) to reconnect
+- If an API call fails (rate limit, timeout), retry up to 3 times with exponential backoff
+- Log all job runs with status, duration, and error details for debugging
+
+---
+
+## 10. User Flows
+
+### Onboarding (New User)
+
+1. User signs up (email magic link or Google OAuth)
+2. Prompted to create their first company — enters name, selects industry from dropdown
+3. Prompted to connect at least one ad account (Google Ads or Meta)
+4. OAuth flow completes, account appears in their dashboard
+5. First data pull is triggered immediately (not waiting for nightly job)
+6. User sees their data within minutes; benchmark line appears once enough peer data exists
+
+### Adding a New Company
+
+1. From the company switcher, user clicks "Add Company"
+2. Enters company name, selects industry
+3. Connects ad accounts for that company
+4. Company appears in their company list
+
+### Daily Use
+
+- User logs in → sees company list → selects a company
+- Dashboard shows line charts for each metric: their line vs. benchmark line
+- User can toggle between metrics (CPC, CPM, CTR, ROAS, CPA)
+- User can change date range (last 7d, 30d, 90d, custom)
+- User can switch between ad accounts within the company if multiple are connected
+
+---
+
+## 11. Dashboard UI Specification
+
+### Layout
+
+- Left sidebar: company switcher (dropdown or list), list of connected ad accounts
+- Main area: the chart + controls
+- Top bar: metric selector (tabs or dropdown: CPC, CPM, CTR, ROAS, CPA), date range picker
+
+### Chart Spec
+
+- Recharts LineChart component
+- X-axis: dates
+- Y-axis: metric value (auto-scaled)
+- Line 1 (solid, branded color): user's ad account performance
+- Line 2 (dashed, gray): peer benchmark (median from benchmark_cache)
+- Optional shaded area between P25 and P75 to show the benchmark range
+- Tooltip on hover showing exact values for both lines on that date
+
+### Empty / Edge States
+
+- No companies yet → show onboarding prompt to create first company
+- Company exists but no ad accounts connected → show prompt to connect
+- Ad account connected but no data yet → show loading/processing message
+- Data exists but not enough peers for benchmark → show user's line only with message "Benchmark data coming soon — we need more accounts in your industry"
+- User's spend quartile changed → optional toast notification
+
+---
+
+## 12. Security Considerations
+
+- OAuth tokens (access + refresh) must be encrypted at rest in the database — use Supabase Vault or application-level encryption
+- All API routes require authentication (Supabase session check)
+- Users can only access their own companies and ad accounts (row-level security in Supabase)
+- Benchmark data is always aggregated — never expose individual account data to other users
+- Minimum account thresholds (5 for industry, 20 for quartile) prevent reverse-engineering individual performance
+- Rate limit API routes to prevent abuse
+
+---
+
+## 13. V1 Scope — What's In, What's Out
+
+### In Scope (Build This)
+
+- User auth (signup, login, logout)
+- Company CRUD with industry selection
+- Google Ads OAuth connection + daily data pull
+- Meta Ads OAuth connection + daily data pull
+- Account-level daily metrics ingestion (not campaign-level)
+- Dynamic spend tier (quartile) calculation
+- Nightly benchmark aggregation pipeline
+- Dashboard with line chart (user vs. benchmark) per metric
+- Date range selection (7d, 30d, 90d, custom)
+- Company switcher and ad account switcher
+
+### Out of Scope (Future)
+
+- Campaign-level or ad set-level benchmarking
+- Multi-user access per company (team features)
+- Portfolio view (all companies at a glance)
+- Alerts / notifications when you drop below benchmark
+- Export / PDF reports
+- Billing / payment (V1 is free beta)
+- Additional platforms (TikTok Ads, LinkedIn Ads, etc.)
+- Custom industry creation by users
+- Historical data backfill beyond 90 days
+
+---
+
+## 14. Recommended Development Sequence
+
+Build in this order:
+
+1. **Project scaffold** — Next.js + TypeScript + Supabase client setup + Vercel config
+2. **Database migrations** — all tables, indexes, RLS policies, seed industries
+3. **Auth flow** — signup, login, session management via Supabase Auth
+4. **Company CRUD** — create, list, update companies with industry selection
+5. **OAuth flows** — Google Ads + Meta Ads connect/callback routes, token storage
+6. **Data ingestion service** — pull daily metrics from both APIs, upsert into daily_metrics
+7. **Spend tier calculation** — nightly job to compute quartiles per industry × platform
+8. **Benchmark aggregation** — nightly job to compute and cache all benchmark values
+9. **Dashboard API route** — serve user metrics + benchmark data for a given account/metric/date range
+10. **Dashboard UI** — company selector, account selector, metric tabs, line chart with Recharts
+
+---
+
+## 15. Environment Variables
+
+Create a `.env.local` file in the project root with these variables:
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# Google Ads
+GOOGLE_ADS_CLIENT_ID=your-client-id
+GOOGLE_ADS_CLIENT_SECRET=your-client-secret
+GOOGLE_ADS_DEVELOPER_TOKEN=your-dev-token
+GOOGLE_ADS_REDIRECT_URI=http://localhost:3000/api/connect/google/callback
+
+# Meta Ads
+META_APP_ID=your-app-id
+META_APP_SECRET=your-app-secret
+META_REDIRECT_URI=http://localhost:3000/api/connect/meta/callback
+```
+
+---
+
+*This document is the single source of truth for the V1 build. Feed it to Claude Code as the project spec and build sequentially.*
