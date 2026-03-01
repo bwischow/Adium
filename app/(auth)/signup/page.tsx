@@ -12,7 +12,7 @@ export default function SignupPage() {
   const [error, setError]        = useState('')
   const [loading, setLoading]    = useState(false)
   const router = useRouter()
-  const supabase = await createClient()
+  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
