@@ -110,41 +110,6 @@ export async function POST(request: Request) {
     console.log('[Login API] SUCCESS: Session created')
     console.log('[Login API] User:', { id: data.user?.id, email: data.user?.email })
 
-    // MANUALLY set session cookies since Supabase SSR doesn't call setAll()
-    console.log('[Login API] Manually setting session cookies...')
-
-    const projectRef = SUPABASE_URL.split('//')[1]?.split('.')[0] || 'unknown'
-    const cookieBaseName = `sb-${projectRef}-auth-token`
-
-    // Construct the session cookie value - Supabase expects base64-encoded JSON
-    const sessionData = {
-      access_token: data.session.access_token,
-      refresh_token: data.session.refresh_token,
-      expires_at: data.session.expires_at,
-      expires_in: data.session.expires_in,
-      token_type: data.session.token_type,
-      user: data.session.user,
-    }
-
-    // Base64 encode the session (Supabase's expected format)
-    const sessionCookieValue = Buffer.from(JSON.stringify(sessionData)).toString('base64')
-
-    console.log('[Login API] Setting cookie:', cookieBaseName)
-    console.log('[Login API] Cookie value (base64-encoded, length:', sessionCookieValue.length, ')')
-
-    try {
-      cookieStore.set(cookieBaseName, sessionCookieValue, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        sameSite: 'lax',
-        secure: process.env.NODE_ENV === 'production',
-        httpOnly: true,
-      })
-      console.log('[Login API] Cookie set successfully')
-    } catch (error) {
-      console.log('[Login API] Cookie set ERROR:', error)
-    }
-
     // Return success response
     return NextResponse.json({
       success: true,

@@ -20,38 +20,32 @@ export async function createClient() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore.getAll().map(cookie => {
+            // Decode legacy base64-encoded auth cookies so Supabase can read them
+            if (cookie.name.startsWith('sb-') && cookie.name.endsWith('-auth-token')) {
+              try {
+                const decoded = Buffer.from(cookie.value, 'base64').toString('utf-8')
+                JSON.parse(decoded) // validate it's proper JSON before using
+                return { ...cookie, value: decoded }
+              } catch {
+                // Not base64-encoded, return as-is
+              }
+            }
+            return cookie
+          })
         },
         setAll(cookiesToSet) {
-          console.log('[Server createClient] setAll CALLED with', cookiesToSet.length, 'cookies')
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options)
             })
-          } catch (error) {
+          } catch {
             // Called from a Server Component — cookies will be set by middleware
           }
         },
       },
     }
   )
-
-  // MANUALLY inject session from cookie (Supabase SSR is broken)
-  const projectRef = url.split('//')[1]?.split('.')[0] || 'unknown'
-  const authCookie = cookieStore.get(`sb-${projectRef}-auth-token`)
-
-  if (authCookie) {
-    try {
-      const sessionData = JSON.parse(Buffer.from(authCookie.value, 'base64').toString())
-      console.log('[Server createClient] Manually setting session from cookie')
-      await supabase.auth.setSession({
-        access_token: sessionData.access_token,
-        refresh_token: sessionData.refresh_token,
-      })
-    } catch (e) {
-      console.log('[Server createClient] Failed to set session:', e)
-    }
-  }
 
   return supabase
 }
