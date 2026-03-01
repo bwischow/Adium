@@ -15,7 +15,7 @@ export async function GET() {
   const cookieNames = all.map((c) => c.name)
   const hasSupabaseCookies = cookieNames.some((n) => n.includes('supabase') || n.startsWith('sb-'))
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { data: { user }, error } = await supabase.auth.getUser()
 
   return NextResponse.json({
