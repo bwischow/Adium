@@ -11,6 +11,13 @@ export async function middleware(request: NextRequest) {
   // Debug: show incoming cookies
   console.log('[mw] cookies:', request.cookies.getAll().map(c => c.name))
 
+  // Debug: show cookie VALUES
+  const authCookie = request.cookies.get('sb-cmytcofakqsfhioyxwja-auth-token')
+  if (authCookie) {
+    console.log('[mw] auth cookie value length:', authCookie.value.length)
+    console.log('[mw] auth cookie value preview:', authCookie.value.substring(0, 100))
+  }
+
   let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
@@ -19,9 +26,12 @@ export async function middleware(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          const cookies = request.cookies.getAll()
+          console.log('[mw] Supabase getAll() called, returning', cookies.length, 'cookies')
+          return cookies
         },
         setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+          console.log('[mw] Supabase setAll() called with', cookiesToSet.length, 'cookies')
           cookiesToSet.forEach(({ name, value, options }) => {
             // Set on request so Supabase can read it on this request
             request.cookies.set(name, value)
@@ -36,6 +46,13 @@ export async function middleware(request: NextRequest) {
   // Refresh the session — required for Server Components
   const { data, error } = await supabase.auth.getUser()
   const user = data.user
+
+  // Also check the session
+  const { data: sessionData } = await supabase.auth.getSession()
+  console.log('[mw] getSession result:', {
+    hasSession: !!sessionData.session,
+    hasAccessToken: !!sessionData.session?.access_token
+  })
 
   console.log(
     '[mw]',
