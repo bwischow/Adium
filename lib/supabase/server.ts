@@ -10,11 +10,11 @@ function getSupabaseEnv() {
   return { url, anonKey }
 }
 
-export function createClient() {
-  const cookieStore = cookies()
+export async function createClient() {
+  const cookieStore = await cookies()
   const { url, anonKey } = getSupabaseEnv()
 
-  return createServerClient(
+  const supabase = createServerClient(
     url,
     anonKey,
     {
@@ -23,21 +23,37 @@ export function createClient() {
           return cookieStore.getAll()
         },
         setAll(cookiesToSet) {
-          console.log('[setAll] CALLED with', cookiesToSet.length, 'cookies')
+          console.log('[Server createClient] setAll CALLED with', cookiesToSet.length, 'cookies')
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              console.log('[setAll] Setting cookie:', name)
               cookieStore.set(name, value, options)
             })
-            console.log('[setAll] SUCCESS: All cookies set')
           } catch (error) {
-            console.log('[setAll] ERROR:', error instanceof Error ? error.message : error)
             // Called from a Server Component — cookies will be set by middleware
           }
         },
       },
     }
   )
+
+  // MANUALLY inject session from cookie (Supabase SSR is broken)
+  const projectRef = url.split('//')[1]?.split('.')[0] || 'unknown'
+  const authCookie = cookieStore.get(`sb-${projectRef}-auth-token`)
+
+  if (authCookie) {
+    try {
+      const sessionData = JSON.parse(Buffer.from(authCookie.value, 'base64').toString())
+      console.log('[Server createClient] Manually setting session from cookie')
+      await supabase.auth.setSession({
+        access_token: sessionData.access_token,
+        refresh_token: sessionData.refresh_token,
+      })
+    } catch (e) {
+      console.log('[Server createClient] Failed to set session:', e)
+    }
+  }
+
+  return supabase
 }
 
 /** Service role client — bypasses RLS. Only use in server-side pipeline code. */
