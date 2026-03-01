@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
-import { pullDailyMetrics } from '@/lib/ingestion'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -45,8 +43,8 @@ export async function GET(request: Request) {
     'https://googleads.googleapis.com/v16/customers:listAccessibleCustomers',
     {
       headers: {
-        Authorization:          `Bearer ${tokens.access_token}`,
-        'developer-token':      process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+        Authorization:     `Bearer ${tokens.access_token}`,
+        'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
       },
     }
   )
@@ -65,34 +63,55 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/companies/${companyId}/connect?status=error`)
   }
 
-  const supabase = createServiceClient()
+  // Try to fetch descriptive names for each account in parallel
+  const accounts = await Promise.all(
+    resourceNames.map(async (resourceName) => {
+      const id = resourceName.replace('customers/', '')
+      try {
+        const nameRes = await fetch(
+          `https://googleads.googleapis.com/v16/customers/${id}/googleAds:search`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization:     `Bearer ${tokens.access_token}`,
+              'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+              'Content-Type':    'application/json',
+            },
+            body: JSON.stringify({
+              query: 'SELECT customer.id, customer.descriptive_name FROM customer LIMIT 1',
+            }),
+          }
+        )
+        if (nameRes.ok) {
+          const nameData = await nameRes.json()
+          const descriptiveName = nameData?.results?.[0]?.customer?.descriptiveName
+          if (descriptiveName) return { id, name: descriptiveName }
+        }
+      } catch {
+        // fall through to default
+      }
+      return { id, name: `Google Ads ${id}` }
+    })
+  )
 
-  for (const resourceName of resourceNames) {
-    // resourceName looks like "customers/1234567890"
-    const platformAccountId = resourceName.replace('customers/', '')
+  // Store pending OAuth state in an HTTP-only cookie for the selection step
+  const pending = JSON.stringify({
+    access_token:  tokens.access_token,
+    refresh_token: tokens.refresh_token ?? null,
+    expires_in:    tokens.expires_in ?? null,
+    accounts,
+    companyId,
+  })
 
-    const { data: account } = await supabase
-      .from('ad_accounts')
-      .upsert({
-        company_id:          companyId,
-        platform:            'google_ads',
-        platform_account_id: platformAccountId,
-        account_name:        `Google Ads ${platformAccountId}`,
-        access_token:        tokens.access_token,
-        refresh_token:       tokens.refresh_token ?? null,
-        token_expires_at:    tokens.expires_in
-          ? new Date(Date.now() + tokens.expires_in * 1000).toISOString()
-          : null,
-        is_active:           true,
-      }, { onConflict: 'platform,platform_account_id' })
-      .select()
-      .single()
-
-    if (account) {
-      // Trigger immediate data pull for last 30 days
-      await pullDailyMetrics(account.id, 'google_ads', tokens.access_token)
-    }
-  }
-
-  return NextResponse.redirect(`${origin}/companies/${companyId}/connect?status=success`)
+  const response = NextResponse.redirect(
+    `${origin}/companies/${companyId}/connect?step=google-select`
+  )
+  response.cookies.set('google_oauth_pending', pending, {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge:   600, // 10 minutes
+    path:     '/',
+  })
+  return response
 }
