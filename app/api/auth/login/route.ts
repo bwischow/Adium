@@ -110,17 +110,35 @@ export async function POST(request: Request) {
     console.log('[Login API] SUCCESS: Session created')
     console.log('[Login API] User:', { id: data.user?.id, email: data.user?.email })
 
-    // Explicitly set the session to trigger cookie storage
-    console.log('[Login API] Explicitly calling setSession to trigger cookie storage...')
-    const { error: setSessionError } = await supabase.auth.setSession({
+    // MANUALLY set session cookies since Supabase SSR doesn't call setAll()
+    console.log('[Login API] Manually setting session cookies...')
+
+    const projectRef = SUPABASE_URL.split('//')[1]?.split('.')[0] || 'unknown'
+    const cookieBaseName = `sb-${projectRef}-auth-token`
+
+    // Construct the session cookie value (Supabase stores the entire session as JSON)
+    const sessionCookieValue = JSON.stringify({
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
+      expires_at: data.session.expires_at,
+      expires_in: data.session.expires_in,
+      token_type: data.session.token_type,
+      user: data.session.user,
     })
 
-    if (setSessionError) {
-      console.log('[Login API] setSession ERROR:', setSessionError.message)
-    } else {
-      console.log('[Login API] setSession successful, cookies should now be set')
+    console.log('[Login API] Setting cookie:', cookieBaseName)
+
+    try {
+      cookieStore.set(cookieBaseName, sessionCookieValue, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+      })
+      console.log('[Login API] Cookie set successfully')
+    } catch (error) {
+      console.log('[Login API] Cookie set ERROR:', error)
     }
 
     // Return success response
