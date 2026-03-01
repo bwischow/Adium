@@ -50,10 +50,6 @@ export async function middleware(request: NextRequest) {
     },
   }
 
-  // Test: manually call getAll to verify it works
-  console.log('[mw] Testing manual getAll()...')
-  cookieReader.getAll()
-
   const supabase = createServerClient(
     SUPABASE_URL as string,
     SUPABASE_ANON_KEY as string,
@@ -62,17 +58,34 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  console.log('[mw] Calling supabase.auth.getUser()...')
-  const { data, error } = await supabase.auth.getUser()
-  const user = data.user
-  console.log('[mw] getUser() returned, user:', user?.id)
+  // MANUALLY extract and set session since Supabase ignores cookie config
+  let user = null
+  let error = null
 
-  // Also check the session
-  const { data: sessionData } = await supabase.auth.getSession()
-  console.log('[mw] getSession result:', {
-    hasSession: !!sessionData.session,
-    hasAccessToken: !!sessionData.session?.access_token
-  })
+  if (authCookie) {
+    try {
+      const sessionData = JSON.parse(Buffer.from(authCookie.value, 'base64').toString())
+      console.log('[mw] Manually setting session from cookie...')
+
+      // Explicitly set the session
+      const { data, error: setError } = await supabase.auth.setSession({
+        access_token: sessionData.access_token,
+        refresh_token: sessionData.refresh_token,
+      })
+
+      if (setError) {
+        console.log('[mw] setSession error:', setError.message)
+        error = setError
+      } else {
+        console.log('[mw] setSession SUCCESS, user:', data.user?.id)
+        user = data.user
+      }
+    } catch (e) {
+      console.log('[mw] Failed to manually set session:', e)
+    }
+  } else {
+    console.log('[mw] No auth cookie found, skipping session setup')
+  }
 
   console.log(
     '[mw]',
