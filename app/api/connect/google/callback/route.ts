@@ -71,7 +71,7 @@ export async function GET(request: Request) {
 
   // ── Step 2: List accessible customer accounts ─────────────────
   const customerRes = await fetch(
-    'https://googleads.googleapis.com/v18/customers:listAccessibleCustomers',
+    'https://googleads.googleapis.com/v20/customers:listAccessibleCustomers',
     {
       headers: {
         Authorization:     `Bearer ${tokens.access_token}`,
@@ -119,7 +119,7 @@ export async function GET(request: Request) {
       const id = resourceName.replace('customers/', '')
       try {
         const nameRes = await fetch(
-          `https://googleads.googleapis.com/v18/customers/${id}/googleAds:search`,
+          `https://googleads.googleapis.com/v20/customers/${id}/googleAds:search`,
           {
             method: 'POST',
             headers: {
