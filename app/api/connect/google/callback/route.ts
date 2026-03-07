@@ -40,10 +40,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/dashboard?connect=error`)
   }
 
-  const errorRedirect = (reason: string) =>
-    NextResponse.redirect(
-      `${origin}/companies/${companyId}/connect?status=error&error_reason=${reason}`
+  const errorRedirect = (reason: string, detail?: string) => {
+    const params = new URLSearchParams({ status: 'error', error_reason: reason })
+    if (detail) params.set('error_detail', detail)
+    return NextResponse.redirect(
+      `${origin}/companies/${companyId}/connect?${params}`
     )
+  }
 
   // ── Step 1: Exchange code for tokens ──────────────────────────
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -61,7 +64,7 @@ export async function GET(request: Request) {
   if (!tokenRes.ok) {
     const errBody = await tokenRes.text()
     console.error('[google/callback] Token exchange failed:', tokenRes.status, errBody)
-    return errorRedirect('token_exchange_failed')
+    return errorRedirect('token_exchange_failed', `HTTP ${tokenRes.status}`)
   }
 
   const tokens = await tokenRes.json()
@@ -80,7 +83,18 @@ export async function GET(request: Request) {
   if (!customerRes.ok) {
     const errBody = await customerRes.text()
     console.error('[google/callback] listAccessibleCustomers failed:', customerRes.status, errBody)
-    return errorRedirect('list_accounts_failed')
+
+    // Parse Google's error for a human-readable message
+    let detail = `HTTP ${customerRes.status}`
+    try {
+      const errJson = JSON.parse(errBody)
+      const gErr = errJson?.error
+      if (gErr?.message) detail = gErr.message
+      if (gErr?.errors?.[0]?.message) detail = gErr.errors[0].message
+    } catch {
+      // use the status code detail
+    }
+    return errorRedirect('list_accounts_failed', detail)
   }
 
   let resourceNames: string[] = []
