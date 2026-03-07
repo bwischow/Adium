@@ -25,6 +25,7 @@ export default function ConnectAccountPage() {
   const sessionId   = searchParams.get('session')
   const status      = searchParams.get('status')
   const errorReason = searchParams.get('error_reason')
+  const errorDetail = searchParams.get('error_detail')
 
   // --- Google account selection state ---
   const [googleAccounts, setGoogleAccounts]   = useState<GoogleAccount[]>([])
@@ -182,7 +183,10 @@ export default function ConnectAccountPage() {
 
         {errorMessage && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
-            {errorMessage}
+            <p>{errorMessage}</p>
+            {errorDetail && (
+              <p className="mt-1 text-xs text-red-500 font-mono">Detail: {errorDetail}</p>
+            )}
           </div>
         )}
 
