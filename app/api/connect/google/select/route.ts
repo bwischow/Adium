@@ -57,7 +57,14 @@ export async function POST(request: Request) {
       .single()
 
     if (savedAccount) {
-      await pullDailyMetrics(savedAccount.id, 'google_ads', pending.access_token)
+      // Pull last 24 hours of metrics immediately after connecting
+      await pullDailyMetrics(
+        savedAccount.id,
+        'google_ads',
+        pending.access_token,
+        account.id,  // platformAccountId (Google Ads customer ID)
+        1             // last 1 day
+      )
     }
   }
 
