@@ -96,7 +96,7 @@ async function fetchGoogleAdsMetrics(
   `
 
   const res = await fetchWithRetry(
-    `https://googleads.googleapis.com/v16/customers/${customerId}/googleAds:search`,
+    `https://googleads.googleapis.com/v18/customers/${customerId}/googleAds:search`,
     {
       method: 'POST',
       headers: {
@@ -170,7 +170,7 @@ export async function pullGoogleAdsForAccount(account: {
   `
 
   const res = await fetchWithRetry(
-    `https://googleads.googleapis.com/v16/customers/${account.platform_account_id}/googleAds:search`,
+    `https://googleads.googleapis.com/v18/customers/${account.platform_account_id}/googleAds:search`,
     {
       method: 'POST',
       headers: {
