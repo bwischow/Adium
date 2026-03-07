@@ -15,13 +15,13 @@ function getServiceClient() {
   )
 }
 
-/** Pull up to 30 days of daily account-level metrics for one ad account. */
+/** Pull daily account-level metrics for one ad account. */
 export async function pullDailyMetrics(
   adAccountId: string,
   platform: 'google_ads' | 'meta',
   accessToken: string,
-  platformAccountId?: string,  // required for Meta
-  daysBack = 30
+  platformAccountId: string,
+  daysBack = 1
 ): Promise<void> {
   const endDate   = new Date()
   const startDate = subDays(endDate, daysBack)
@@ -29,9 +29,9 @@ export async function pullDailyMetrics(
   let rows: DailyRow[]
 
   if (platform === 'google_ads') {
-    rows = await fetchGoogleAdsMetrics(accessToken, startDate, endDate)
+    rows = await fetchGoogleAdsMetrics(accessToken, platformAccountId, startDate, endDate)
   } else {
-    rows = await fetchMetaMetrics(accessToken, platformAccountId!, startDate, endDate)
+    rows = await fetchMetaMetrics(accessToken, platformAccountId, startDate, endDate)
   }
 
   if (rows.length === 0) return
@@ -76,13 +76,11 @@ interface DailyRow {
 
 async function fetchGoogleAdsMetrics(
   accessToken: string,
+  platformAccountId: string,
   startDate: Date,
   endDate: Date
 ): Promise<DailyRow[]> {
-  // We use the Google Ads Query Language (GAQL) to pull account-level daily totals.
-  // Note: replace '1234567890' with the actual customer ID stored on the ad_account.
-  // The caller passes the access token; the customer ID is embedded in the GAQL endpoint.
-  // In a real implementation you'd also pass the customer_id as a param.
+  const customerId = platformAccountId.replace(/-/g, '')
 
   const gaql = `
     SELECT
@@ -94,15 +92,37 @@ async function fetchGoogleAdsMetrics(
       metrics.conversions_value
     FROM customer
     WHERE segments.date BETWEEN '${format(startDate, 'yyyy-MM-dd')}' AND '${format(endDate, 'yyyy-MM-dd')}'
+    ORDER BY segments.date ASC
   `
 
-  // This is a placeholder — the real endpoint needs the customer_id in the URL.
-  // It is wired up fully in the nightly job where we have the full ad_account row.
-  console.log('[ingestion] Google Ads GAQL prepared (customer ID injected at call time)', gaql.trim().split('\n')[0])
+  const res = await fetchWithRetry(
+    `https://googleads.googleapis.com/v16/customers/${customerId}/googleAds:search`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization:     `Bearer ${accessToken}`,
+        'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+        'Content-Type':    'application/json',
+      },
+      body: JSON.stringify({ query: gaql }),
+    }
+  )
 
-  // Return empty for now — the nightly job calls pullGoogleAdsForAccount which
-  // has access to the full ad_account row including platform_account_id.
-  return []
+  if (!res.ok) {
+    const errBody = await res.text()
+    console.error(`[google_ads] API error ${res.status}:`, errBody)
+    throw new Error(`Google Ads API error: ${res.status}`)
+  }
+
+  const data = await res.json()
+  return (data.results ?? []).map((r: any) => ({
+    date:             r.segments.date,
+    impressions:      Number(r.metrics.impressions ?? 0),
+    clicks:           Number(r.metrics.clicks ?? 0),
+    spend:            Number(r.metrics.costMicros ?? 0) / 1_000_000,
+    conversions:      Number(r.metrics.conversions ?? 0),
+    conversion_value: Number(r.metrics.conversionsValue ?? 0),
+  }))
 }
 
 /** Used by the nightly job — has the full account row. */
