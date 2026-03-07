@@ -8,33 +8,58 @@ interface GoogleAccount {
   name: string
 }
 
+const ERROR_MESSAGES: Record<string, string> = {
+  token_exchange_failed:  'Failed to complete Google authentication. Please try again.',
+  list_accounts_failed:   'Could not retrieve your Google Ads accounts. Make sure your Google account has access to Google Ads.',
+  no_accounts_found:      'No Google Ads accounts were found for this Google account.',
+  no_ad_accounts:         'All accounts associated with this login are manager (MCC) accounts. Please sign in with a Google account that directly owns ad-serving accounts.',
+  session_storage_failed: 'An internal error occurred. Please try again.',
+}
+
 export default function ConnectAccountPage() {
   const { id: companyId } = useParams<{ id: string }>()
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const step = searchParams.get('step')
+  const step        = searchParams.get('step')
+  const sessionId   = searchParams.get('session')
+  const status      = searchParams.get('status')
+  const errorReason = searchParams.get('error_reason')
 
   // --- Google account selection state ---
   const [googleAccounts, setGoogleAccounts]   = useState<GoogleAccount[]>([])
   const [selectedIds, setSelectedIds]         = useState<string[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
   const [submitting, setSubmitting]           = useState(false)
+  const [fetchError, setFetchError]           = useState('')
+  const [syncError, setSyncError]             = useState('')
 
   useEffect(() => {
-    if (step === 'google-select') {
+    if (step === 'google-select' && sessionId) {
       setLoadingAccounts(true)
-      fetch('/api/connect/google/accounts')
-        .then(r => r.json())
+      setFetchError('')
+      fetch(`/api/connect/google/accounts?session=${sessionId}`)
+        .then(async (r) => {
+          if (!r.ok) {
+            const data = await r.json().catch(() => ({}))
+            throw new Error(data.error || `Failed to load accounts (${r.status})`)
+          }
+          return r.json()
+        })
         .then(data => {
-          if (Array.isArray(data.accounts)) {
+          if (Array.isArray(data.accounts) && data.accounts.length > 0) {
             setGoogleAccounts(data.accounts)
             setSelectedIds(data.accounts.map((a: GoogleAccount) => a.id))
+          } else {
+            setFetchError('No Google Ads accounts found for this Google account.')
           }
+        })
+        .catch((err) => {
+          setFetchError(err.message || 'Failed to load accounts.')
         })
         .finally(() => setLoadingAccounts(false))
     }
-  }, [step])
+  }, [step, sessionId])
 
   const toggleAccount = (id: string) => {
     setSelectedIds(prev =>
@@ -43,19 +68,24 @@ export default function ConnectAccountPage() {
   }
 
   const handleConfirmAccounts = async () => {
-    if (selectedIds.length === 0 || submitting) return
+    if (selectedIds.length === 0 || submitting || !sessionId) return
     setSubmitting(true)
+    setSyncError('')
     try {
       const res = await fetch('/api/connect/google/select', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ selectedIds }),
+        body:    JSON.stringify({ selectedIds, sessionId }),
       })
       if (res.ok) {
-        router.push(`/dashboard?company=${companyId}`)
+        const data = await res.json()
+        router.push(`/dashboard?company=${data.companyId || companyId}`)
       } else {
-        router.push(`/companies/${companyId}/connect?status=error`)
+        const data = await res.json().catch(() => ({}))
+        setSyncError(data.error || 'Failed to sync accounts. Please try again.')
       }
+    } catch {
+      setSyncError('Network error. Please check your connection and try again.')
     } finally {
       setSubmitting(false)
     }
@@ -66,7 +96,7 @@ export default function ConnectAccountPage() {
   }
 
   // --- Google account selection screen ---
-  if (step === 'google-select') {
+  if (step === 'google-select' && sessionId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
@@ -75,11 +105,23 @@ export default function ConnectAccountPage() {
             Select the Google Ads accounts you want to connect to this company.
           </p>
 
+          {fetchError && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+              {fetchError}
+            </div>
+          )}
+
+          {syncError && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+              {syncError}
+            </div>
+          )}
+
           {loadingAccounts ? (
             <p className="text-sm text-gray-400">Loading accounts...</p>
-          ) : googleAccounts.length === 0 ? (
+          ) : googleAccounts.length === 0 && !fetchError ? (
             <p className="text-sm text-gray-500">No Google Ads accounts found for this Google account.</p>
-          ) : (
+          ) : googleAccounts.length > 0 ? (
             <div className="space-y-2 mb-6">
               {googleAccounts.map(account => (
                 <label
@@ -99,23 +141,25 @@ export default function ConnectAccountPage() {
                 </label>
               ))}
             </div>
-          )}
+          ) : null}
 
-          <button
-            onClick={handleConfirmAccounts}
-            disabled={selectedIds.length === 0 || submitting || loadingAccounts}
-            className="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {submitting
-              ? 'Connecting...'
-              : `Sync ${selectedIds.length} account${selectedIds.length !== 1 ? 's' : ''}`}
-          </button>
+          {googleAccounts.length > 0 && (
+            <button
+              onClick={handleConfirmAccounts}
+              disabled={selectedIds.length === 0 || submitting || loadingAccounts}
+              className="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {submitting
+                ? 'Connecting...'
+                : `Sync ${selectedIds.length} account${selectedIds.length !== 1 ? 's' : ''}`}
+            </button>
+          )}
 
           <button
             onClick={() => router.push(`/companies/${companyId}/connect`)}
             className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700"
           >
-            ← Back
+            &larr; Back
           </button>
         </div>
       </div>
@@ -123,6 +167,10 @@ export default function ConnectAccountPage() {
   }
 
   // --- Platform selection screen ---
+  const errorMessage = status === 'error'
+    ? (errorReason && ERROR_MESSAGES[errorReason]) || 'Something went wrong connecting your account. Please try again.'
+    : null
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
@@ -131,6 +179,12 @@ export default function ConnectAccountPage() {
           Connect at least one Google Ads or Meta Ads account so we can pull
           your data and start benchmarking.
         </p>
+
+        {errorMessage && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            {errorMessage}
+          </div>
+        )}
 
         <div className="space-y-4">
           <button
@@ -160,7 +214,7 @@ export default function ConnectAccountPage() {
           onClick={() => router.push('/dashboard')}
           className="mt-6 w-full text-sm text-gray-500 hover:text-gray-700"
         >
-          Skip for now →
+          Skip for now &rarr;
         </button>
       </div>
     </div>

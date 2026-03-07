@@ -5,7 +5,15 @@
  */
 
 import { NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { runDataPull, runSpendTierCalculation, runBenchmarkAggregation } from '@/lib/pipeline'
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function POST(request: Request) {
   const authHeader = request.headers.get('authorization')
@@ -17,6 +25,16 @@ export async function POST(request: Request) {
   const log: string[] = []
 
   try {
+    // Cleanup stale pending OAuth sessions (older than 1 hour)
+    log.push('Cleaning up stale OAuth sessions…')
+    const supabase = getServiceClient()
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count } = await supabase
+      .from('pending_oauth_sessions')
+      .delete({ count: 'exact' })
+      .lt('created_at', oneHourAgo)
+    log.push(`Cleaned up ${count ?? 0} stale OAuth sessions.`)
+
     log.push('Starting data pull…')
     await runDataPull()
     log.push('Data pull complete.')

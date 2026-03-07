@@ -1,17 +1,44 @@
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { createClient } from '@supabase/supabase-js'
 
-export async function GET() {
-  const cookieStore = await cookies()
-  const raw = cookieStore.get('google_oauth_pending')?.value
-  if (!raw) {
-    return NextResponse.json({ error: 'No pending Google OAuth session' }, { status: 400 })
+/**
+ * GET /api/connect/google/accounts?session=<uuid>
+ *
+ * Returns the list of Google Ads accounts stored in a pending OAuth session.
+ * Replaces the old cookie-based approach.
+ */
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const sessionId = searchParams.get('session')
+
+  if (!sessionId) {
+    return NextResponse.json({ error: 'Missing session parameter' }, { status: 400 })
   }
 
-  try {
-    const { accounts } = JSON.parse(raw)
-    return NextResponse.json({ accounts })
-  } catch {
-    return NextResponse.json({ error: 'Invalid session data' }, { status: 400 })
+  const supabase = getServiceClient()
+
+  const { data: session, error } = await supabase
+    .from('pending_oauth_sessions')
+    .select('accounts, consumed_at')
+    .eq('id', sessionId)
+    .single()
+
+  if (error || !session) {
+    console.error('[google/accounts] Session not found:', sessionId, error?.message)
+    return NextResponse.json({ error: 'Session not found or expired' }, { status: 404 })
   }
+
+  if (session.consumed_at) {
+    return NextResponse.json({ error: 'Session already used' }, { status: 410 })
+  }
+
+  return NextResponse.json({ accounts: session.accounts })
 }
