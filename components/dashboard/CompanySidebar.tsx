@@ -78,6 +78,12 @@ export default function CompanySidebar({
             ))}
           </ul>
         )}
+        <Link
+          href={`/companies/${selectedCompanyId}/connect`}
+          className="block text-xs text-brand-600 hover:underline mt-2"
+        >
+          + Connect account
+        </Link>
       </div>
 
       {/* Logout */}
