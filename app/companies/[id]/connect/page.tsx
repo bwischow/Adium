@@ -9,11 +9,12 @@ interface GoogleAccount {
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
-  token_exchange_failed:  'Failed to complete Google authentication. Please try again.',
-  list_accounts_failed:   'Could not retrieve your Google Ads accounts. Make sure your Google account has access to Google Ads.',
-  no_accounts_found:      'No Google Ads accounts were found for this Google account.',
-  no_ad_accounts:         'All accounts associated with this login are manager (MCC) accounts. Please sign in with a Google account that directly owns ad-serving accounts.',
-  session_storage_failed: 'An internal error occurred. Please try again.',
+  token_exchange_failed:    'Failed to complete authentication. Please try again.',
+  list_accounts_failed:     'Could not retrieve your ad accounts. Make sure your account has the correct access.',
+  no_accounts_found:        'No ad accounts were found for this account.',
+  no_ad_accounts:           'All accounts associated with this login are manager (MCC) accounts. Please sign in with a Google account that directly owns ad-serving accounts.',
+  session_storage_failed:   'An internal error occurred. Please try again.',
+  long_lived_token_failed:  'Failed to obtain a long-lived token from Meta. Please try again.',
 }
 
 export default function ConnectAccountPage() {
@@ -168,6 +169,7 @@ export default function ConnectAccountPage() {
   }
 
   // --- Platform selection screen ---
+  const isSuccess = status === 'success'
   const errorMessage = status === 'error'
     ? (errorReason && ERROR_MESSAGES[errorReason]) || 'Something went wrong connecting your account. Please try again.'
     : null
@@ -177,9 +179,16 @@ export default function ConnectAccountPage() {
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
         <h1 className="text-2xl font-bold mb-2">Connect an ad account</h1>
         <p className="text-gray-500 text-sm mb-8">
-          Connect at least one Google Ads or Meta Ads account so we can pull
+          Connect a Google Ads or Meta Ads account so we can pull
           your data and start benchmarking.
         </p>
+
+        {isSuccess && (
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3">
+            <p className="font-medium">Account connected successfully!</p>
+            <p className="mt-1">You can connect another account below, or head back to the dashboard.</p>
+          </div>
+        )}
 
         {errorMessage && (
           <div className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
@@ -215,10 +224,10 @@ export default function ConnectAccountPage() {
         </div>
 
         <button
-          onClick={() => router.push('/dashboard')}
+          onClick={() => router.push(`/dashboard?company=${companyId}`)}
           className="mt-6 w-full text-sm text-gray-500 hover:text-gray-700"
         >
-          Skip for now &rarr;
+          {isSuccess ? '← Back to dashboard' : 'Skip for now →'}
         </button>
       </div>
     </div>
