@@ -146,15 +146,15 @@ export async function runSpendTierCalculation(): Promise<void> {
   // Group by industry × platform to compute quartile boundaries
   const groups = new Map<string, { id: string; spend: number }[]>()
 
-  for (const [accountId, { spend, industryId, platform }] of spendMap) {
+  spendMap.forEach(({ spend, industryId, platform }, accountId) => {
     const key = `${industryId}::${platform}`
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push({ id: accountId, spend })
-  }
+  })
 
   const upsertRows: any[] = []
 
-  for (const [key, entries] of groups) {
+  groups.forEach((entries, key) => {
     const [industryIdStr, platform] = key.split('::')
     const industryId = Number(industryIdStr)
 
@@ -176,7 +176,7 @@ export async function runSpendTierCalculation(): Promise<void> {
         calculated_at:      new Date().toISOString(),
       })
     })
-  }
+  })
 
   if (upsertRows.length > 0) {
     await supabase
@@ -257,14 +257,14 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
 
   const cacheRows: any[] = []
 
-  for (const [key, segRows] of segments) {
+  segments.forEach((segRows, key) => {
     const [industryIdStr, platform, quartileStr] = key.split('::')
     const industryId = Number(industryIdStr)
     const quartile   = quartileStr === 'null' ? null : Number(quartileStr)
 
     // Minimum account thresholds
     const threshold = quartile === null ? 5 : 20
-    if (segRows.length < threshold) continue
+    if (segRows.length < threshold) return
 
     for (const metric of METRICS) {
       const values = segRows
@@ -288,7 +288,7 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
         calculated_at:  new Date().toISOString(),
       })
     }
-  }
+  })
 
   if (cacheRows.length > 0) {
     await supabase
