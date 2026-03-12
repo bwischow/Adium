@@ -96,13 +96,14 @@ export async function POST(request: Request) {
 
     if (savedAccount) {
       try {
-        // Pull last 24 hours of metrics immediately after connecting
+        // Pull last 30 days of metrics on initial connect so there's
+        // meaningful data for benchmarks right away
         await pullDailyMetrics(
           savedAccount.id,
           'google_ads',
           pending.access_token,
           account.id,  // platformAccountId (Google Ads customer ID)
-          1             // last 1 day
+          30,
         )
       } catch (err) {
         // Don't fail the whole flow if the initial pull has issues
