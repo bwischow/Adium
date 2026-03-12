@@ -96,11 +96,14 @@ export async function POST(request: Request) {
 
     if (savedAccount) {
       try {
+        // Pull last 30 days of metrics on initial connect so there's
+        // meaningful data for benchmarks right away
         await pullDailyMetrics(
           savedAccount.id,
           'meta',
           pending.access_token,
           account.id,
+          30,
         )
       } catch (err) {
         console.error(`[meta/select] Initial pull failed for ${account.id}:`, err)

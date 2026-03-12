@@ -258,26 +258,74 @@ async function fetchMetaMetrics(
     `https://graph.facebook.com/v19.0/${platformAccountId}/insights?${params}`
   )
 
+  if (!res.ok) {
+    const errBody = await res.text()
+    console.error(`[meta] API error ${res.status} for ${platformAccountId}:`, errBody)
+    throw new Error(`Meta Ads API error: ${res.status}`)
+  }
+
   const data = await res.json()
+
+  if (data.error) {
+    console.error(`[meta] Graph API error for ${platformAccountId}:`, data.error)
+    throw new Error(`Meta Graph API error: ${data.error.message}`)
+  }
+
   const items: any[] = data.data ?? []
+  console.log(`[meta] fetched ${items.length} insight rows for ${platformAccountId}`)
 
   return items.map(item => ({
     date:             item.date_start,
     impressions:      Number(item.impressions ?? 0),
     clicks:           Number(item.clicks ?? 0),
     spend:            Number(item.spend ?? 0),
-    conversions:      extractActionValue(item.actions, 'purchase'),
-    conversion_value: extractActionValue(item.action_values, 'purchase'),
+    conversions:      extractConversions(item.actions),
+    conversion_value: extractConversionValue(item.action_values),
   }))
 }
 
-function extractActionValue(actions: any[] | undefined, actionType: string): number {
+/**
+ * Extract total conversions from Meta actions array.
+ * Matches purchase events across all common action types:
+ *   - offsite_conversion.fb_pixel_purchase (pixel-based)
+ *   - omni_purchase (cross-channel)
+ *   - purchase (standard)
+ * Falls back to 0 if none found.
+ */
+function extractConversions(actions: any[] | undefined): number {
   if (!actions) return 0
-  const match = actions.find(a =>
-    a.action_type === `offsite_conversion.fb_pixel_${actionType}` ||
-    a.action_type === `omni_${actionType}`
-  )
-  return match ? Number(match.value) : 0
+  const purchaseTypes = [
+    'offsite_conversion.fb_pixel_purchase',
+    'omni_purchase',
+    'purchase',
+  ]
+  let total = 0
+  for (const action of actions) {
+    if (purchaseTypes.includes(action.action_type)) {
+      total = Math.max(total, Number(action.value ?? 0))
+    }
+  }
+  return total
+}
+
+/**
+ * Extract total conversion value from Meta action_values array.
+ * Same matching logic as extractConversions.
+ */
+function extractConversionValue(actionValues: any[] | undefined): number {
+  if (!actionValues) return 0
+  const purchaseTypes = [
+    'offsite_conversion.fb_pixel_purchase',
+    'omni_purchase',
+    'purchase',
+  ]
+  let total = 0
+  for (const action of actionValues) {
+    if (purchaseTypes.includes(action.action_type)) {
+      total = Math.max(total, Number(action.value ?? 0))
+    }
+  }
+  return total
 }
 
 // ---------------------------------------------------------------------------
