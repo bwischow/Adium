@@ -23,7 +23,7 @@ interface PendingSession {
   access_token:  string
   refresh_token: string | null
   expires_in:    number | null
-  accounts:      { id: string; name: string }[]
+  accounts:      { id: string; name: string; loginCustomerId?: string }[]
   consumed_at:   string | null
 }
 
@@ -77,6 +77,10 @@ export async function POST(request: Request) {
   }
 
   for (const account of toSave) {
+    // loginCustomerId is the MCC ID that grants access to this account
+    // (may equal the account's own ID for standalone accounts)
+    const loginCustomerId = account.loginCustomerId ?? account.id
+
     const { data: savedAccount } = await supabase
       .from('ad_accounts')
       .upsert({
@@ -90,6 +94,7 @@ export async function POST(request: Request) {
           ? new Date(Date.now() + pending.expires_in * 1000).toISOString()
           : null,
         is_active:           true,
+        login_customer_id:   loginCustomerId,
       }, { onConflict: 'platform,platform_account_id' })
       .select()
       .single()
@@ -104,6 +109,7 @@ export async function POST(request: Request) {
           pending.access_token,
           account.id,  // platformAccountId (Google Ads customer ID)
           30,
+          loginCustomerId,
         )
       } catch (err) {
         // Don't fail the whole flow if the initial pull has issues

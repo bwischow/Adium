@@ -9,7 +9,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { subDays, format } from 'date-fns'
-import { pullGoogleAdsForAccount } from './ingestion'
+import { pullGoogleAdsForAccount, pullDailyMetrics } from './ingestion'
 import { deriveMetric } from './metrics'
 import type { MetricName, Platform } from '@/types'
 
@@ -31,7 +31,7 @@ export async function runDataPull(): Promise<void> {
 
   const { data: accounts, error } = await supabase
     .from('ad_accounts')
-    .select('id, platform, platform_account_id, access_token, refresh_token, token_expires_at')
+    .select('id, platform, platform_account_id, access_token, refresh_token, token_expires_at, login_customer_id')
     .eq('is_active', true)
 
   if (error) throw error
@@ -41,67 +41,31 @@ export async function runDataPull(): Promise<void> {
       if (account.platform === 'google_ads') {
         await pullGoogleAdsForAccount(account)
       } else {
-        // Meta — pull yesterday using the stored access token
-        const yesterday = subDays(new Date(), 1)
-        const params = new URLSearchParams({
-          access_token:   account.access_token,
-          time_range:     JSON.stringify({
-            since: format(yesterday, 'yyyy-MM-dd'),
-            until: format(yesterday, 'yyyy-MM-dd'),
-          }),
-          fields:         'date_start,impressions,clicks,spend,actions,action_values',
-          level:          'account',
-          time_increment: '1',
-        })
-
-        const res = await fetch(
-          `https://graph.facebook.com/v19.0/${account.platform_account_id}/insights?${params}`
+        // Meta — use the shared pullDailyMetrics which has proper error
+        // handling and conversion matching
+        await pullDailyMetrics(
+          account.id,
+          'meta',
+          account.access_token,
+          account.platform_account_id,
+          1,  // nightly: just yesterday
         )
-
-        if (res.status === 401) {
-          // Token expired — mark inactive and continue
-          await supabase
-            .from('ad_accounts')
-            .update({ is_active: false })
-            .eq('id', account.id)
-          console.warn(`[pipeline] Meta token expired for account ${account.id}, marked inactive`)
-          continue
-        }
-
-        const data = await res.json()
-        const items: any[] = data.data ?? []
-
-        if (items.length > 0) {
-          const rows = items.map((item: any) => ({
-            ad_account_id:    account.id,
-            date:             item.date_start,
-            impressions:      Number(item.impressions ?? 0),
-            clicks:           Number(item.clicks ?? 0),
-            spend:            Number(item.spend ?? 0),
-            conversions:      extractActionValue(item.actions, 'purchase'),
-            conversion_value: extractActionValue(item.action_values, 'purchase'),
-            pulled_at:        new Date().toISOString(),
-          }))
-
-          await supabase
-            .from('daily_metrics')
-            .upsert(rows, { onConflict: 'ad_account_id,date' })
-        }
       }
     } catch (err) {
       console.error(`[pipeline] data pull failed for account ${account.id}:`, err)
+
+      // If Meta token expired (common after ~60 days), mark inactive
+      const errMsg = String(err)
+      if (errMsg.includes('190') || errMsg.includes('401') || errMsg.includes('expired')) {
+        await supabase
+          .from('ad_accounts')
+          .update({ is_active: false })
+          .eq('id', account.id)
+        console.warn(`[pipeline] Token expired for account ${account.id}, marked inactive`)
+      }
       // Continue with other accounts
     }
   }
-}
-
-function extractActionValue(actions: any[] | undefined, type: string): number {
-  if (!actions) return 0
-  const match = actions.find(a =>
-    a.action_type === `offsite_conversion.fb_pixel_${type}` ||
-    a.action_type === `omni_${type}`
-  )
-  return match ? Number(match.value) : 0
 }
 
 // ---------------------------------------------------------------------------
