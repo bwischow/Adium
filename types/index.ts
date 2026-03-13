@@ -60,6 +60,7 @@ export interface BenchmarkCache {
   median_value: number
   p25_value: number
   p75_value: number
+  p90_value: number
   account_count: number
 }
 
@@ -71,9 +72,9 @@ export interface DailyPoint {
 
 export interface BenchmarkSeries {
   date: string
-  median: number | null
-  p25: number | null
+  p50: number | null
   p75: number | null
+  p90: number | null
 }
 
 export interface DashboardData {
@@ -82,6 +83,7 @@ export interface DashboardData {
   accountCount: number
   hasEnoughPeers: boolean
   spendTierLabel: string | null
+  isHistoricalFallback?: boolean
 }
 
 export const SPEND_TIER_LABELS: Record<SpendQuartile, string> = {

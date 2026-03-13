@@ -146,7 +146,7 @@ export async function runSpendTierCalculation(): Promise<void> {
   // Group by industry × platform to compute quartile boundaries
   const groups = new Map<string, { id: string; spend: number }[]>()
 
-  for (const [accountId, { spend, industryId, platform }] of spendMap) {
+  for (const [accountId, { spend, industryId, platform }] of Array.from(spendMap)) {
     const key = `${industryId}::${platform}`
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key)!.push({ id: accountId, spend })
@@ -154,7 +154,7 @@ export async function runSpendTierCalculation(): Promise<void> {
 
   const upsertRows: any[] = []
 
-  for (const [key, entries] of groups) {
+  for (const [key, entries] of Array.from(groups)) {
     const [industryIdStr, platform] = key.split('::')
     const industryId = Number(industryIdStr)
 
@@ -257,7 +257,7 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
 
   const cacheRows: any[] = []
 
-  for (const [key, segRows] of segments) {
+  for (const [key, segRows] of Array.from(segments)) {
     const [industryIdStr, platform, quartileStr] = key.split('::')
     const industryId = Number(industryIdStr)
     const quartile   = quartileStr === 'null' ? null : Number(quartileStr)
@@ -284,6 +284,7 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
         median_value:   percentile(values, 50),
         p25_value:      percentile(values, 25),
         p75_value:      percentile(values, 75),
+        p90_value:      percentile(values, 90),
         account_count:  values.length,
         calculated_at:  new Date().toISOString(),
       })

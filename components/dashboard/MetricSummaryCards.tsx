@@ -23,6 +23,7 @@ interface Props {
   previous?: MetricSnapshot
   onMetricClick?: (metric: MetricName) => void
   selectedMetric?: MetricName
+  benchmarkP50?: number | null
 }
 
 const CARD_METRICS: { key: MetricName; higherIsBetter: boolean }[] = [
@@ -38,10 +39,10 @@ function pctChange(current: number | null, previous: number | null): number | nu
   return (current - previous) / previous
 }
 
-export default function MetricSummaryCards({ current, previous, onMetricClick, selectedMetric }: Props) {
+export default function MetricSummaryCards({ current, previous, onMetricClick, selectedMetric, benchmarkP50 }: Props) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
-      {CARD_METRICS.map(({ key, higherIsBetter }) => {
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-px mb-6 border border-white/20">
+      {CARD_METRICS.map(({ key, higherIsBetter }, i) => {
         const value  = current[key]
         const prev   = previous?.[key] ?? null
         const change = pctChange(value, prev)
@@ -60,22 +61,27 @@ export default function MetricSummaryCards({ current, previous, onMetricClick, s
           <button
             key={key}
             onClick={() => onMetricClick?.(key)}
-            className={`bg-white rounded-xl border p-4 text-left transition-all hover:shadow-md ${
+            className={`p-4 text-left transition-colors ${
               isSelected
-                ? 'border-brand-500 ring-2 ring-brand-100'
-                : 'border-gray-200'
+                ? 'bg-peach text-black'
+                : 'bg-white/5 text-white hover:bg-white/10'
             }`}
           >
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
+            <p className={`text-xs font-medium tracking-widest mb-1 ${
+              isSelected ? 'text-black/50' : 'text-white/40'
+            }`}>
               {METRIC_LABELS[key]}
             </p>
-            <p className="text-xl font-bold text-gray-900">
-              {value != null ? fmt(value) : '—'}
+            <p className={`text-xl font-black ${isSelected ? 'text-black' : 'text-white'}`}>
+              {value != null ? fmt(value) : '\u2014'}
             </p>
             {change != null && (
               <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${
-                isPositive === null ? 'text-gray-400' :
-                isPositive ? 'text-green-600' : 'text-red-500'
+                isPositive === null
+                  ? (isSelected ? 'text-black/40' : 'text-white/30')
+                  : isPositive
+                    ? 'text-green-400'
+                    : 'text-red-400'
               }`}>
                 {trend === 'up' ? (
                   <TrendingUp className="h-3 w-3" />
@@ -85,118 +91,19 @@ export default function MetricSummaryCards({ current, previous, onMetricClick, s
                   <Minus className="h-3 w-3" />
                 )}
                 <span>{Math.abs(change * 100).toFixed(1)}%</span>
-                <span className="text-gray-400">vs prior</span>
+                <span className={isSelected ? 'text-black/30' : 'text-white/20'}>vs prior</span>
               </div>
+            )}
+            {isSelected && benchmarkP50 != null && (
+              <p className={`text-[10px] mt-1 tracking-widest ${
+                isSelected ? 'text-black/40' : 'text-white/30'
+              }`}>
+                P50: {fmt(benchmarkP50)}
+              </p>
             )}
           </button>
         )
       })}
-
-      {/* Conversions card (raw number, not a derived metric) */}
-      <button
-        onClick={() => onMetricClick?.('cpa')}
-        className="bg-white rounded-xl border border-gray-200 p-4 text-left transition-all hover:shadow-md lg:col-span-5 sm:col-span-3 col-span-2"
-      >
-        <div className="flex items-center gap-8 flex-wrap">
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-              Conversions
-            </p>
-            <p className="text-xl font-bold text-gray-900">
-              {current.conversions.toFixed(0)}
-            </p>
-            {previous && (
-              <ChangeIndicator
-                current={current.conversions}
-                previous={previous.conversions}
-                higherIsBetter
-              />
-            )}
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-              Spend
-            </p>
-            <p className="text-xl font-bold text-gray-900">
-              ${current.spend.toFixed(2)}
-            </p>
-            {previous && (
-              <ChangeIndicator
-                current={current.spend}
-                previous={previous.spend}
-                higherIsBetter={false}
-              />
-            )}
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-              Clicks
-            </p>
-            <p className="text-xl font-bold text-gray-900">
-              {current.clicks.toLocaleString()}
-            </p>
-            {previous && (
-              <ChangeIndicator
-                current={current.clicks}
-                previous={previous.clicks}
-                higherIsBetter
-              />
-            )}
-          </div>
-          <div>
-            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">
-              Impressions
-            </p>
-            <p className="text-xl font-bold text-gray-900">
-              {current.impressions.toLocaleString()}
-            </p>
-            {previous && (
-              <ChangeIndicator
-                current={current.impressions}
-                previous={previous.impressions}
-                higherIsBetter
-              />
-            )}
-          </div>
-        </div>
-      </button>
-    </div>
-  )
-}
-
-function ChangeIndicator({
-  current,
-  previous,
-  higherIsBetter,
-}: {
-  current: number
-  previous: number
-  higherIsBetter: boolean
-}) {
-  const change = pctChange(current, previous)
-  if (change == null) return null
-
-  let trend: 'up' | 'down' | 'flat' = 'flat'
-  if (Math.abs(change) > 0.005) {
-    trend = change > 0 ? 'up' : 'down'
-  }
-
-  const isPositive = trend === 'flat' ? null :
-    (trend === 'up' && higherIsBetter) || (trend === 'down' && !higherIsBetter)
-
-  return (
-    <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${
-      isPositive === null ? 'text-gray-400' :
-      isPositive ? 'text-green-600' : 'text-red-500'
-    }`}>
-      {trend === 'up' ? (
-        <TrendingUp className="h-3 w-3" />
-      ) : trend === 'down' ? (
-        <TrendingDown className="h-3 w-3" />
-      ) : (
-        <Minus className="h-3 w-3" />
-      )}
-      <span>{Math.abs(change * 100).toFixed(1)}%</span>
     </div>
   )
 }

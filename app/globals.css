@@ -4,6 +4,35 @@
 
 @layer base {
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-void text-white antialiased;
+    letter-spacing: 0.03em;
+  }
+
+  * {
+    text-transform: uppercase;
+  }
+
+  /* Preserve normal casing for text inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="url"],
+  input[type="tel"],
+  textarea {
+    text-transform: none;
+  }
+}
+
+@layer utilities {
+  .diagonal-lines {
+    background-image: repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 10px,
+      currentColor 10px,
+      currentColor 11px
+    );
+    pointer-events: none;
   }
 }

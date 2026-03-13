@@ -29,28 +29,30 @@ export default function NewCompanyPage() {
       return
     }
 
-    // After creating company, go to connect an ad account
     router.push(`/companies/${json.id}/connect`)
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
-        <h1 className="text-2xl font-bold mb-2">Create your first company</h1>
-        <p className="text-gray-500 text-sm mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-void">
+      <div className="border border-white/20 p-8 w-full max-w-lg">
+        <div className="bg-terminal px-6 py-5 mb-6 border border-black">
+          <h1 className="text-xs font-bold text-black tracking-widest">Initialize Company</h1>
+        </div>
+
+        <p className="text-xs text-white/40 mb-6 tracking-wide">
           A company represents a client or business whose ads you manage.
         </p>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">
+          <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 mb-4 text-xs tracking-wide">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Company name
+            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">
+              Company Name
             </label>
             <input
               type="text"
@@ -59,12 +61,12 @@ export default function NewCompanyPage() {
               required
               placeholder="e.g. Acme Corp"
               disabled={loading}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">
               Industry
             </label>
             <select
@@ -72,9 +74,9 @@ export default function NewCompanyPage() {
               onChange={e => setIndustryId(e.target.value)}
               required
               disabled={loading}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-white/20 bg-black px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach"
             >
-              <option value="">Select an industry…</option>
+              <option value="">Select an industry\u2026</option>
               {INDUSTRIES.map(ind => (
                 <option key={ind.id} value={ind.id}>{ind.name}</option>
               ))}
@@ -84,9 +86,9 @@ export default function NewCompanyPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-brand-600 text-white rounded-lg py-2 font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
+            className="w-full bg-peach text-black py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-60 transition-colors"
           >
-            {loading ? 'Creating…' : 'Continue →'}
+            {loading ? 'Creating\u2026' : 'Continue \u2192'}
           </button>
         </form>
       </div>

@@ -20,16 +20,16 @@ export default function DateRangePicker({
   onCustomChange,
 }: Props) {
   return (
-    <div className="flex items-center gap-2 flex-wrap">
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+    <div className="flex items-center gap-3 flex-wrap">
+      <div className="flex border border-white/20">
         {presets.map(p => (
           <button
             key={p.label}
             onClick={() => onPresetChange(p.label)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`px-2 py-1 sm:px-3 sm:py-1.5 text-xs font-bold tracking-widest transition-colors border-r border-white/20 last:border-r-0 ${
               preset === p.label
-                ? 'bg-white text-brand-700 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'bg-white text-black'
+                : 'bg-transparent text-white/50 hover:text-white hover:bg-white/5'
             }`}
           >
             {p.label}
@@ -37,20 +37,21 @@ export default function DateRangePicker({
         ))}
       </div>
 
-      {/* Custom range inputs */}
-      <input
-        type="date"
-        value={customStart}
-        onChange={e => onCustomChange(e.target.value, customEnd)}
-        className="border border-gray-300 rounded-lg px-2 py-1 text-sm"
-      />
-      <span className="text-gray-400 text-sm">→</span>
-      <input
-        type="date"
-        value={customEnd}
-        onChange={e => onCustomChange(customStart, e.target.value)}
-        className="border border-gray-300 rounded-lg px-2 py-1 text-sm"
-      />
+      <div className="hidden sm:flex items-center gap-3">
+        <input
+          type="date"
+          value={customStart}
+          onChange={e => onCustomChange(e.target.value, customEnd)}
+          className="border border-white/20 bg-transparent px-2 py-1 text-xs text-white/70 focus:outline-none focus:border-peach"
+        />
+        <span className="text-white/30 text-xs">&rarr;</span>
+        <input
+          type="date"
+          value={customEnd}
+          onChange={e => onCustomChange(customStart, e.target.value)}
+          className="border border-white/20 bg-transparent px-2 py-1 text-xs text-white/70 focus:outline-none focus:border-peach"
+        />
+      </div>
     </div>
   )
 }

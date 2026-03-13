@@ -12,15 +12,15 @@ const METRICS: MetricName[] = ['ctr', 'cpc', 'cpm', 'roas', 'cpa']
 
 export default function MetricTabs({ selected, onChange }: Props) {
   return (
-    <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+    <div className="flex border border-white/20 overflow-x-auto">
       {METRICS.map(m => (
         <button
           key={m}
           onClick={() => onChange(m)}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          className={`px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold tracking-widest transition-colors border-r border-white/20 last:border-r-0 flex-shrink-0 ${
             selected === m
-              ? 'bg-white text-brand-700 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-peach text-black'
+              : 'bg-transparent text-white/50 hover:text-white hover:bg-white/5'
           }`}
         >
           {METRIC_LABELS[m]}
