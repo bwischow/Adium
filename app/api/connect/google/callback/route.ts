@@ -112,27 +112,56 @@ export async function GET(request: Request) {
   }
 
   // ── Step 3: Fetch account details & filter out manager (MCC) accounts ──
-  const accounts: { id: string; name: string }[] = []
+  //
+  // For each accessible customer we attempt to query its details. When the
+  // OAuth token was granted via an MCC, the API requires the MCC's customer
+  // ID in the `login-customer-id` header. We don't know up front which ID
+  // is the MCC, so we try each account with itself first, and on a
+  // permission error, retry using every *other* accessible customer as the
+  // login-customer-id (one of them is likely the MCC).
+  const allIds = resourceNames.map(rn => rn.replace('customers/', ''))
+  const accounts: { id: string; name: string; loginCustomerId: string }[] = []
+
+  async function fetchCustomerDetails(
+    id: string,
+    loginId: string
+  ): Promise<Response> {
+    return fetch(
+      `https://googleads.googleapis.com/v20/customers/${id}/googleAds:search`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization:       `Bearer ${tokens.access_token}`,
+          'developer-token':   process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+          'login-customer-id': loginId,
+          'Content-Type':      'application/json',
+        },
+        body: JSON.stringify({
+          query: 'SELECT customer.id, customer.descriptive_name, customer.manager FROM customer LIMIT 1',
+        }),
+      }
+    )
+  }
 
   await Promise.all(
-    resourceNames.map(async (resourceName) => {
-      const id = resourceName.replace('customers/', '')
+    allIds.map(async (id) => {
       try {
-        const nameRes = await fetch(
-          `https://googleads.googleapis.com/v20/customers/${id}/googleAds:search`,
-          {
-            method: 'POST',
-            headers: {
-              Authorization:          `Bearer ${tokens.access_token}`,
-              'developer-token':      process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
-              'login-customer-id':    id, // required when account might be under an MCC
-              'Content-Type':         'application/json',
-            },
-            body: JSON.stringify({
-              query: 'SELECT customer.id, customer.descriptive_name, customer.manager FROM customer LIMIT 1',
-            }),
+        // First try using the account's own ID as login-customer-id
+        let nameRes = await fetchCustomerDetails(id, id)
+        let workingLoginId = id
+
+        // If permission denied, try other accessible IDs as login-customer-id
+        // (one of them is likely the MCC that owns this account)
+        if (nameRes.status === 403) {
+          for (const candidateLoginId of allIds) {
+            if (candidateLoginId === id) continue
+            nameRes = await fetchCustomerDetails(id, candidateLoginId)
+            if (nameRes.ok) {
+              workingLoginId = candidateLoginId
+              break
+            }
           }
-        )
+        }
 
         if (!nameRes.ok) {
           console.warn(`[google/callback] Failed to fetch details for customer ${id}: ${nameRes.status}`)
@@ -152,6 +181,7 @@ export async function GET(request: Request) {
         accounts.push({
           id,
           name: descriptiveName || `Google Ads ${id}`,
+          loginCustomerId: workingLoginId,
         })
       } catch (err) {
         console.warn(`[google/callback] Error fetching customer ${id}:`, err)

@@ -3,9 +3,9 @@ import { createClient } from '@supabase/supabase-js'
 import { pullDailyMetrics } from '@/lib/ingestion'
 
 /**
- * POST /api/connect/google/select
+ * POST /api/connect/meta/select
  *
- * Consumes a pending OAuth session: saves selected ad accounts to the
+ * Consumes a pending OAuth session: saves selected Meta ad accounts to the
  * database and kicks off an initial data pull. The session is marked
  * consumed immediately to prevent double-submit / replay.
  */
@@ -23,7 +23,7 @@ interface PendingSession {
   access_token:  string
   refresh_token: string | null
   expires_in:    number | null
-  accounts:      { id: string; name: string; loginCustomerId?: string }[]
+  accounts:      { id: string; name: string }[]
   consumed_at:   string | null
 }
 
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     .single()
 
   if (fetchError || !session) {
-    console.error('[google/select] Session not found:', sessionId, fetchError?.message)
+    console.error('[meta/select] Session not found:', sessionId, fetchError?.message)
     return NextResponse.json({ error: 'Session not found or expired' }, { status: 404 })
   }
 
@@ -59,10 +59,10 @@ export async function POST(request: Request) {
     .from('pending_oauth_sessions')
     .update({ consumed_at: new Date().toISOString() })
     .eq('id', sessionId)
-    .is('consumed_at', null) // extra safety: only if still unconsumed
+    .is('consumed_at', null)
 
   if (updateError) {
-    console.error('[google/select] Failed to mark session consumed:', updateError)
+    console.error('[meta/select] Failed to mark session consumed:', updateError)
     return NextResponse.json({ error: 'Failed to consume session' }, { status: 500 })
   }
 
@@ -77,24 +77,19 @@ export async function POST(request: Request) {
   }
 
   for (const account of toSave) {
-    // loginCustomerId is the MCC ID that grants access to this account
-    // (may equal the account's own ID for standalone accounts)
-    const loginCustomerId = account.loginCustomerId ?? account.id
-
     const { data: savedAccount } = await supabase
       .from('ad_accounts')
       .upsert({
         company_id:          pending.company_id,
-        platform:            'google_ads',
+        platform:            'meta',
         platform_account_id: account.id,
         account_name:        account.name,
         access_token:        pending.access_token,
-        refresh_token:       pending.refresh_token,
+        refresh_token:       null,
         token_expires_at:    pending.expires_in
           ? new Date(Date.now() + pending.expires_in * 1000).toISOString()
           : null,
         is_active:           true,
-        login_customer_id:   loginCustomerId,
       }, { onConflict: 'platform,platform_account_id' })
       .select()
       .single()
@@ -105,15 +100,13 @@ export async function POST(request: Request) {
         // meaningful data for benchmarks right away
         await pullDailyMetrics(
           savedAccount.id,
-          'google_ads',
+          'meta',
           pending.access_token,
-          account.id,  // platformAccountId (Google Ads customer ID)
+          account.id,
           30,
-          loginCustomerId,
         )
       } catch (err) {
-        // Don't fail the whole flow if the initial pull has issues
-        console.error(`[google/select] Initial pull failed for ${account.id}:`, err)
+        console.error(`[meta/select] Initial pull failed for ${account.id}:`, err)
       }
     }
   }

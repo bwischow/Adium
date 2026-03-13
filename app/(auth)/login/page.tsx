@@ -47,7 +47,6 @@ export default function LoginPage() {
       }
 
       console.log('[Login Page] SUCCESS! Navigating to dashboard...')
-      // Cookies are now set server-side, do full reload to ensure middleware sees them
       window.location.assign('/dashboard')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
@@ -59,57 +58,61 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100">
-      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-void">
+      <div className="border border-white/20 p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-brand-600">Adium</h1>
-          <p className="text-gray-500 mt-1">How good are your ads?</p>
+          <h1 className="text-sm font-bold tracking-widest text-white">ADIUM</h1>
+          <p className="text-xs text-white/30 mt-1 tracking-widest">Benchmark Intelligence System</p>
         </div>
 
-        <h2 className="text-xl font-semibold mb-6">Sign in</h2>
+        <div className="bg-terminal px-6 py-5 mb-6 border border-black">
+          <h2 className="text-xs font-bold text-black tracking-widest">System Access</h2>
+        </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">
+          <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 mb-4 text-xs tracking-wide">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Identifier</label>
             <input
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
               required
               disabled={loading}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
+              placeholder="email@company.com"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Access Key</label>
             <input
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               required
               disabled={loading}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
+              placeholder="********"
             />
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-brand-600 text-white rounded-lg py-2 font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
+            className="w-full bg-peach text-black py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-60 transition-colors"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Authenticating\u2026' : 'Authenticate'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-brand-600 hover:underline font-medium">
-            Sign up
+        <p className="mt-6 text-center text-xs text-white/30 tracking-wide">
+          No account?{' '}
+          <Link href="/signup" className="text-peach hover:text-peach-dark font-medium">
+            Register
           </Link>
         </p>
       </div>

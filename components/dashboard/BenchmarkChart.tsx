@@ -2,15 +2,12 @@
 
 import {
   ResponsiveContainer,
-  LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ReferenceLine,
-  Area,
   ComposedChart,
 } from 'recharts'
 import { format, parseISO } from 'date-fns'
@@ -22,6 +19,7 @@ interface Props {
   benchmarkSeries: BenchmarkSeries[]
   metric: MetricName
   showBenchmark: boolean
+  isHistoricalFallback?: boolean
 }
 
 export default function BenchmarkChart({
@@ -29,15 +27,15 @@ export default function BenchmarkChart({
   benchmarkSeries,
   metric,
   showBenchmark,
+  isHistoricalFallback,
 }: Props) {
-  // Merge user and benchmark series on date
   const dateSet = new Set([
     ...userSeries.map(d => d.date),
     ...benchmarkSeries.map(d => d.date),
   ])
 
-  const userMap     = new Map(userSeries.map(d => [d.date, d.value]))
-  const benchMap    = new Map(benchmarkSeries.map(d => [d.date, d]))
+  const userMap  = new Map(userSeries.map(d => [d.date, d.value]))
+  const benchMap = new Map(benchmarkSeries.map(d => [d.date, d]))
 
   const chartData = Array.from(dateSet)
     .sort()
@@ -45,14 +43,10 @@ export default function BenchmarkChart({
       const bench = benchMap.get(date)
       return {
         date,
-        you:    userMap.get(date) ?? null,
-        median: bench?.median ?? null,
-        p25:    bench?.p25    ?? null,
-        p75:    bench?.p75    ?? null,
-        // For the shaded band we use a range between p25 and p75
-        band:   bench?.p25 != null && bench?.p75 != null
-          ? [bench.p25, bench.p75] as [number, number]
-          : null,
+        you: userMap.get(date) ?? null,
+        p50: bench?.p50 ?? null,
+        p75: bench?.p75 ?? null,
+        p90: bench?.p90 ?? null,
       }
     })
 
@@ -63,85 +57,106 @@ export default function BenchmarkChart({
     try { return format(parseISO(d), 'MMM d') } catch { return d }
   }
 
+  const tooltipNames: Record<string, string> = {
+    you: 'You',
+    p50: isHistoricalFallback ? 'Your P50' : 'Benchmark P50',
+    p75: isHistoricalFallback ? 'Your P75' : 'Benchmark P75',
+    p90: isHistoricalFallback ? 'Your P90' : 'Benchmark P90',
+  }
+
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">{METRIC_LABELS[metric]} over time</h2>
+      <h2 className="text-xs font-bold tracking-widest text-white/50 mb-4">
+        {METRIC_LABELS[metric]} over time
+      </h2>
+
+      {isHistoricalFallback && (
+        <p className="text-[10px] text-white/30 tracking-widest mb-3">
+          Comparing against your own historical performance
+        </p>
+      )}
 
       <ResponsiveContainer width="100%" height={380}>
         <ComposedChart data={chartData} margin={{ top: 10, right: 16, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
           <XAxis
             dataKey="date"
             tickFormatter={formatDate}
-            tick={{ fontSize: 12, fill: '#9ca3af' }}
+            tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }}
+            stroke="rgba(255,255,255,0.1)"
           />
           <YAxis
             tickFormatter={formatTick}
-            tick={{ fontSize: 12, fill: '#9ca3af' }}
+            tick={{ fontSize: 10, fill: 'rgba(255,255,255,0.3)' }}
             width={70}
+            stroke="rgba(255,255,255,0.1)"
           />
           <Tooltip
             formatter={(value: number, name: string) => [
-              value != null ? fmt(value) : '—',
-              name === 'you' ? 'You' : name === 'median' ? 'Benchmark (median)' : name,
+              value != null ? fmt(value) : '\u2014',
+              tooltipNames[name] ?? name,
             ]}
             labelFormatter={formatDate}
-            contentStyle={{ fontSize: 13, borderRadius: 8 }}
+            contentStyle={{
+              fontSize: 11,
+              backgroundColor: '#000',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: 0,
+              color: '#fff',
+              textTransform: 'uppercase' as const,
+              letterSpacing: '0.05em',
+            }}
           />
           <Legend
-            formatter={(value) =>
-              value === 'you' ? 'You' :
-              value === 'median' ? 'Benchmark (median)' :
-              value === 'band' ? 'Benchmark P25–P75 range' : value
-            }
+            formatter={(value) => tooltipNames[value] ?? value}
+            wrapperStyle={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}
           />
 
-          {/* Shaded P25-P75 band */}
-          {showBenchmark && (
-            <Area
-              type="monotone"
-              dataKey="p25"
-              stroke="none"
-              fill="none"
-              legendType="none"
-              dot={false}
-              isAnimationActive={false}
-            />
-          )}
-          {showBenchmark && (
-            <Area
-              type="monotone"
-              dataKey="p75"
-              stroke="none"
-              fill="#0ea5e9"
-              fillOpacity={0.08}
-              legendType="square"
-              name="band"
-              dot={false}
-              isAnimationActive={false}
-            />
-          )}
-
-          {/* Benchmark median line */}
           {showBenchmark && (
             <Line
               type="monotone"
-              dataKey="median"
-              stroke="#94a3b8"
-              strokeWidth={2}
+              dataKey="p50"
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth={1.5}
               strokeDasharray="6 3"
               dot={false}
-              name="median"
+              name="p50"
               connectNulls
             />
           )}
 
-          {/* User's own line */}
+          {showBenchmark && (
+            <Line
+              type="monotone"
+              dataKey="p75"
+              stroke="rgba(255,255,255,0.4)"
+              strokeWidth={1.5}
+              strokeDasharray="4 4"
+              dot={false}
+              name="p75"
+              connectNulls
+            />
+          )}
+
+          {showBenchmark && (
+            <Line
+              type="monotone"
+              dataKey="p90"
+              stroke="#F6D6B4"
+              strokeWidth={1.5}
+              strokeDasharray="2 3"
+              dot={false}
+              name="p90"
+              opacity={0.5}
+              connectNulls
+            />
+          )}
+
           <Line
             type="monotone"
             dataKey="you"
-            stroke="#0284c7"
-            strokeWidth={2.5}
+            stroke="#F6D6B4"
+            strokeWidth={2}
             dot={false}
             name="you"
             connectNulls

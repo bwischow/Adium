@@ -23,11 +23,19 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { name, industry_id } = body
+  const { name, industry_id, website, phone, email } = body
+
+  // Build update payload with only provided fields
+  const updates: Record<string, unknown> = {}
+  if (name !== undefined)        updates.name = name
+  if (industry_id !== undefined) updates.industry_id = industry_id
+  if (website !== undefined)     updates.website = website
+  if (phone !== undefined)       updates.phone = phone
+  if (email !== undefined)       updates.email = email
 
   const { data, error } = await supabase
     .from('companies')
-    .update({ name, industry_id })
+    .update(updates)
     .eq('id', params.id)
     .eq('user_id', user.id)
     .select('*, industry:industries(id, name, slug)')
