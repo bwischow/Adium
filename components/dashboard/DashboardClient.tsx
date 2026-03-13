@@ -10,7 +10,8 @@ import MetricSummaryCards from './MetricSummaryCards'
 import DateRangePicker from './DateRangePicker'
 import CompanySidebar from './CompanySidebar'
 import type { Company, AdAccount, MetricName, DashboardData } from '@/types'
-import { RefreshCw } from 'lucide-react'
+import { METRIC_LABELS, METRIC_FORMATS } from '@/types'
+import { RefreshCw, Menu } from 'lucide-react'
 
 const DATE_PRESETS = [
   { label: '24h', days: 1 },
@@ -42,7 +43,6 @@ export default function DashboardClient({ companies }: Props) {
   const searchParams = useSearchParams()
   const supabase    = createClient()
 
-  // Derive initial company from URL param or first company
   const initialCompanyId = searchParams.get('company') ?? companies[0]?.id
   const [selectedCompanyId, setSelectedCompanyId] = useState(initialCompanyId)
 
@@ -58,10 +58,10 @@ export default function DashboardClient({ companies }: Props) {
   const [data, setData]       = useState<DashboardData | null>(null)
   const [summary, setSummary] = useState<{ current: MetricSnapshot; previous?: MetricSnapshot } | null>(null)
   const [loading, setLoading] = useState(false)
-  const [pulling, setPulling] = useState(false)
-  const [error, setError]     = useState('')
+  const [pulling, setPulling]       = useState(false)
+  const [error, setError]           = useState('')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Compute the active date range
   const getDateRange = (): { start: string; end: string } => {
     if (preset === 'custom' && customStart && customEnd) {
       return { start: customStart, end: customEnd }
@@ -81,7 +81,6 @@ export default function DashboardClient({ companies }: Props) {
     const { start, end } = getDateRange()
 
     try {
-      // Fetch benchmark chart data and KPI summary in parallel
       const [benchRes, summaryRes] = await Promise.all([
         fetch(`/api/benchmarks/${selectedAccountId}?${new URLSearchParams({
           metric:     selectedMetric,
@@ -115,7 +114,6 @@ export default function DashboardClient({ companies }: Props) {
     if (!selectedAccountId || pulling) return
     setPulling(true)
     try {
-      const { start } = getDateRange()
       const days = DATE_PRESETS.find(p => p.label === preset)?.days ?? 1
       await fetch(`/api/accounts/${selectedAccountId}/pull`, {
         method: 'POST',
@@ -130,7 +128,6 @@ export default function DashboardClient({ companies }: Props) {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // Reset account selection when company changes
   const handleCompanyChange = (companyId: string) => {
     setSelectedCompanyId(companyId)
     const company = companies.find(c => c.id === companyId)
@@ -146,24 +143,57 @@ export default function DashboardClient({ companies }: Props) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-void">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <CompanySidebar
-        companies={companies}
-        selectedCompanyId={selectedCompanyId}
-        adAccounts={adAccounts}
-        selectedAccountId={selectedAccountId}
-        onCompanyChange={handleCompanyChange}
-        onAccountChange={setSelectedAccountId}
-        onLogout={handleLogout}
-      />
+      <div
+        className={`
+          fixed inset-y-0 left-0 z-40 lg:relative lg:z-0
+          transform transition-transform duration-200 ease-in-out
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <CompanySidebar
+          companies={companies}
+          selectedCompanyId={selectedCompanyId}
+          adAccounts={adAccounts}
+          selectedAccountId={selectedAccountId}
+          onCompanyChange={(id) => {
+            handleCompanyChange(id)
+            setSidebarOpen(false)
+          }}
+          onAccountChange={(id) => {
+            setSelectedAccountId(id)
+            setSidebarOpen(false)
+          }}
+          onLogout={handleLogout}
+        />
+      </div>
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-auto">
+        {/* Mobile header */}
+        <div className="lg:hidden bg-black border-b border-white/10 px-4 py-3 flex items-center gap-3">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="text-white/50 hover:text-white transition-colors"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+          <span className="text-xs font-bold tracking-widest text-white">ADIUM</span>
+        </div>
+
         {/* Top bar */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center gap-4 flex-wrap">
+        <div className="bg-black border-b border-white/10 px-4 sm:px-6 py-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
           <MetricTabs selected={selectedMetric} onChange={setSelectedMetric} />
-          <div className="ml-auto flex items-center gap-2">
+          <div className="sm:ml-auto flex items-center gap-3">
             <DateRangePicker
               preset={preset}
               presets={DATE_PRESETS}
@@ -179,11 +209,11 @@ export default function DashboardClient({ companies }: Props) {
             <button
               onClick={handleRefreshData}
               disabled={pulling || !selectedAccountId}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold tracking-widest text-black bg-peach hover:bg-peach-dark disabled:opacity-50 transition-colors flex-shrink-0"
               title="Pull latest data from ad platform"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${pulling ? 'animate-spin' : ''}`} />
-              {pulling ? 'Pulling…' : 'Refresh'}
+              <RefreshCw className={`h-3 w-3 ${pulling ? 'animate-spin' : ''}`} />
+              {pulling ? 'Pulling\u2026' : 'Refresh'}
             </button>
           </div>
         </div>
@@ -195,39 +225,70 @@ export default function DashboardClient({ companies }: Props) {
           ) : !selectedAccountId ? (
             <EmptyState type="no-accounts" companyId={selectedCompanyId} />
           ) : loading ? (
-            <div className="flex items-center justify-center h-64 text-gray-500">
-              Loading data…
+            <div className="flex items-center justify-center h-64 text-white/30 text-xs tracking-widest">
+              Loading data\u2026
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center h-64 text-red-500">{error}</div>
+            <div className="flex items-center justify-center h-64 text-red-400 text-xs tracking-widest">{error}</div>
           ) : !data || data.userSeries.length === 0 ? (
             <EmptyState type="no-data" />
           ) : (
             <>
-              {/* KPI Summary Cards */}
               {summary && (
                 <MetricSummaryCards
                   current={summary.current}
                   previous={summary.previous}
                   onMetricClick={setSelectedMetric}
                   selectedMetric={selectedMetric}
+                  benchmarkP50={(() => {
+                    if (!data.benchmarkSeries.length) return null
+                    const latest = data.benchmarkSeries[data.benchmarkSeries.length - 1]
+                    return latest?.p50 ?? null
+                  })()}
                 />
               )}
 
-              <div className="bg-white rounded-2xl shadow-sm p-6">
-                {/* Spend tier badge */}
+              {/* Mobile benchmark summary — visible only on small screens */}
+              <div className="sm:hidden mb-4 border border-white/10 p-4">
+                <p className="text-[10px] text-white/30 tracking-widest mb-2">
+                  {data.isHistoricalFallback ? 'Your historical' : 'Benchmark'} comparison
+                </p>
+                <div className="flex items-baseline gap-4">
+                  <div>
+                    <p className="text-[10px] text-white/30 tracking-widest">Your {METRIC_LABELS[selectedMetric]}</p>
+                    <p className="text-lg font-black text-white">
+                      {data.userSeries.length > 0 && data.userSeries[data.userSeries.length - 1].value != null
+                        ? METRIC_FORMATS[selectedMetric](data.userSeries[data.userSeries.length - 1].value!)
+                        : '\u2014'}
+                    </p>
+                  </div>
+                  {data.benchmarkSeries.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-white/30 tracking-widest">P50</p>
+                      <p className="text-lg font-black text-white/50">
+                        {data.benchmarkSeries[data.benchmarkSeries.length - 1]?.p50 != null
+                          ? METRIC_FORMATS[selectedMetric](data.benchmarkSeries[data.benchmarkSeries.length - 1].p50!)
+                          : '\u2014'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Chart — hidden on mobile */}
+              <div className="hidden sm:block border border-white/10 p-6">
                 {data.spendTierLabel && (
-                  <p className="text-sm text-gray-500 mb-1">
-                    Your segment: <span className="font-medium">{data.spendTierLabel}</span>
+                  <p className="text-xs text-white/30 mb-1 tracking-widest">
+                    Segment: <span className="font-bold text-white/50">{data.spendTierLabel}</span>
                     {data.accountCount > 0 && (
-                      <span className="ml-2 text-gray-400">({data.accountCount} peers)</span>
+                      <span className="ml-2 text-white/20">({data.accountCount} peers)</span>
                     )}
                   </p>
                 )}
 
-                {!data.hasEnoughPeers && (
-                  <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg px-4 py-2">
-                    Benchmark data coming soon — we need more accounts in your industry to show peer comparisons.
+                {!data.hasEnoughPeers && !data.isHistoricalFallback && (
+                  <div className="mb-4 bg-peach/10 border border-peach/30 text-peach text-xs px-4 py-2 tracking-wide">
+                    Benchmark data coming soon &mdash; we need more accounts in your industry to show peer comparisons.
                   </div>
                 )}
 
@@ -235,7 +296,8 @@ export default function DashboardClient({ companies }: Props) {
                   userSeries={data.userSeries}
                   benchmarkSeries={data.benchmarkSeries}
                   metric={selectedMetric}
-                  showBenchmark={data.hasEnoughPeers}
+                  showBenchmark={data.hasEnoughPeers || !!data.isHistoricalFallback}
+                  isHistoricalFallback={data.isHistoricalFallback}
                 />
               </div>
             </>
@@ -252,16 +314,16 @@ function EmptyState({ type, companyId }: { type: 'no-accounts' | 'no-data'; comp
   if (type === 'no-accounts') {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-center">
-        <p className="text-lg font-medium text-gray-700 mb-2">No ad accounts connected</p>
-        <p className="text-sm text-gray-500 mb-4">
+        <p className="text-xs font-bold text-white/50 mb-2 tracking-widest">No sources connected</p>
+        <p className="text-xs text-white/30 mb-4 tracking-wide">
           Connect a Google Ads or Meta Ads account to start benchmarking.
         </p>
         {companyId && (
           <button
             onClick={() => router.push(`/companies/${companyId}/connect`)}
-            className="bg-brand-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-brand-700"
+            className="bg-peach text-black px-4 py-2 text-xs font-bold tracking-widest hover:bg-peach-dark transition-colors"
           >
-            Connect an account
+            Connect source
           </button>
         )}
       </div>
@@ -270,9 +332,9 @@ function EmptyState({ type, companyId }: { type: 'no-accounts' | 'no-data'; comp
 
   return (
     <div className="flex flex-col items-center justify-center h-64 text-center">
-      <p className="text-lg font-medium text-gray-700 mb-2">No data yet</p>
-      <p className="text-sm text-gray-500">
-        We&apos;re processing your ad data. Check back shortly.
+      <p className="text-xs font-bold text-white/50 mb-2 tracking-widest">No data yet</p>
+      <p className="text-xs text-white/30 tracking-wide">
+        Processing your ad data. Check back shortly.
       </p>
     </div>
   )

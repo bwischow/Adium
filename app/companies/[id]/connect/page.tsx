@@ -119,45 +119,52 @@ export default function ConnectAccountPage() {
   // --- Account selection screen (Google or Meta) ---
   if (platformConfig && sessionId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
-          <h1 className="text-2xl font-bold mb-2">Choose accounts to sync</h1>
-          <p className="text-gray-500 text-sm mb-6">
-            Select the {platformConfig.label} accounts you want to connect to this company.
+      <div className="min-h-screen flex items-center justify-center bg-void">
+        <div className="border border-white/20 p-8 w-full max-w-lg">
+          <div className="bg-terminal px-6 py-5 mb-6 border border-black">
+            <h1 className="text-xs font-bold text-black tracking-widest">Select Sources</h1>
+          </div>
+
+          <p className="text-xs text-white/40 mb-6 tracking-wide">
+            Select the {platformConfig.label} accounts you want to connect.
           </p>
 
           {fetchError && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            <div className="mb-4 bg-red-900/30 border border-red-500/50 text-red-400 text-xs px-4 py-3 tracking-wide">
               {fetchError}
             </div>
           )}
 
           {syncError && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+            <div className="mb-4 bg-red-900/30 border border-red-500/50 text-red-400 text-xs px-4 py-3 tracking-wide">
               {syncError}
             </div>
           )}
 
           {loadingAccounts ? (
-            <p className="text-sm text-gray-400">Loading accounts...</p>
+            <p className="text-xs text-white/30 tracking-widest">Loading accounts...</p>
           ) : accounts.length === 0 && !fetchError ? (
-            <p className="text-sm text-gray-500">{platformConfig.noAccountsMsg}</p>
+            <p className="text-xs text-white/40">{platformConfig.noAccountsMsg}</p>
           ) : accounts.length > 0 ? (
-            <div className="space-y-2 mb-6">
+            <div className="space-y-px mb-6 border border-white/20">
               {accounts.map(account => (
                 <label
                   key={account.id}
-                  className="flex items-center gap-3 border border-gray-200 rounded-xl px-4 py-3 cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                  className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+                    selectedIds.includes(account.id)
+                      ? 'bg-terminal/20'
+                      : 'hover:bg-white/5'
+                  }`}
                 >
                   <input
                     type="checkbox"
                     checked={selectedIds.includes(account.id)}
                     onChange={() => toggleAccount(account.id)}
-                    className="w-4 h-4 accent-blue-600"
+                    className="w-4 h-4 accent-peach"
                   />
                   <div>
-                    <p className="font-medium text-sm">{account.name}</p>
-                    <p className="text-xs text-gray-400">ID: {account.id}</p>
+                    <p className="text-xs font-bold text-white tracking-wide">{account.name}</p>
+                    <p className="text-[10px] text-white/30 tracking-widest">ID: {account.id}</p>
                   </div>
                 </label>
               ))}
@@ -168,17 +175,17 @@ export default function ConnectAccountPage() {
             <button
               onClick={handleConfirmAccounts}
               disabled={selectedIds.length === 0 || submitting || loadingAccounts}
-              className="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-peach text-black py-3 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-50 transition-colors"
             >
               {submitting
                 ? 'Connecting...'
-                : `Sync ${selectedIds.length} account${selectedIds.length !== 1 ? 's' : ''}`}
+                : `Sync ${selectedIds.length} source${selectedIds.length !== 1 ? 's' : ''}`}
             </button>
           )}
 
           <button
             onClick={() => router.push(`/companies/${companyId}/connect`)}
-            className="mt-3 w-full text-sm text-gray-500 hover:text-gray-700"
+            className="mt-3 w-full text-xs text-white/30 hover:text-white/60 tracking-widest"
           >
             &larr; Back
           </button>
@@ -194,59 +201,67 @@ export default function ConnectAccountPage() {
     : null
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
-        <h1 className="text-2xl font-bold mb-2">Connect an ad account</h1>
-        <p className="text-gray-500 text-sm mb-8">
-          Connect a Google Ads or Meta Ads account so we can pull
-          your data and start benchmarking.
+    <div className="min-h-screen flex items-center justify-center bg-void">
+      <div className="border border-white/20 p-8 w-full max-w-lg">
+        <div className="bg-peach px-6 py-5 mb-6 border border-black">
+          <h1 className="text-xs font-bold text-black tracking-widest">Connect System Inputs</h1>
+        </div>
+
+        <p className="text-xs text-white/40 mb-8 tracking-wide">
+          Connect a Google Ads or Meta Ads account to start benchmarking.
         </p>
 
         {isSuccess && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 text-sm rounded-lg px-4 py-3">
-            <p className="font-medium">Account connected successfully!</p>
-            <p className="mt-1">You can connect another account below, or head back to the dashboard.</p>
+          <div className="mb-6 bg-terminal/20 border border-terminal text-terminal text-xs px-4 py-3 tracking-wide">
+            <p className="font-bold">Source connected successfully.</p>
+            <p className="mt-1 text-terminal/70">Connect another source below, or return to the dashboard.</p>
           </div>
         )}
 
         {errorMessage && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+          <div className="mb-6 bg-red-900/30 border border-red-500/50 text-red-400 text-xs px-4 py-3 tracking-wide">
             <p>{errorMessage}</p>
             {errorDetail && (
-              <p className="mt-1 text-xs text-red-500 font-mono">Detail: {errorDetail}</p>
+              <p className="mt-1 text-[10px] text-red-500/70 font-mono">Detail: {errorDetail}</p>
             )}
           </div>
         )}
 
-        <div className="space-y-4">
+        <div className="space-y-px border border-white/20">
           <button
             onClick={() => handleConnect('google')}
-            className="w-full flex items-center gap-4 border border-gray-200 rounded-xl px-5 py-4 hover:border-brand-500 hover:bg-brand-50 transition-colors"
+            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/5 transition-colors border-b border-white/10"
           >
-            <span className="text-2xl">🔵</span>
-            <div className="text-left">
-              <p className="font-semibold">Connect Google Ads</p>
-              <p className="text-xs text-gray-500">Authorize read access to your Google Ads account</p>
+            <div className="w-8 h-8 bg-terminal flex items-center justify-center">
+              <span className="text-xs font-bold text-black">G</span>
             </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-white tracking-widest">Google Ads</p>
+              <p className="text-[10px] text-white/30 tracking-wide">Authorize read access</p>
+            </div>
+            <span className="ml-auto text-xs text-white/20">&rarr;</span>
           </button>
 
           <button
             onClick={() => handleConnect('meta')}
-            className="w-full flex items-center gap-4 border border-gray-200 rounded-xl px-5 py-4 hover:border-brand-500 hover:bg-brand-50 transition-colors"
+            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/5 transition-colors"
           >
-            <span className="text-2xl">🔷</span>
-            <div className="text-left">
-              <p className="font-semibold">Connect Meta Ads</p>
-              <p className="text-xs text-gray-500">Authorize read access to your Meta Ads account</p>
+            <div className="w-8 h-8 bg-peach flex items-center justify-center">
+              <span className="text-xs font-bold text-black">M</span>
             </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-white tracking-widest">Meta Ads</p>
+              <p className="text-[10px] text-white/30 tracking-wide">Authorize read access</p>
+            </div>
+            <span className="ml-auto text-xs text-white/20">&rarr;</span>
           </button>
         </div>
 
         <button
           onClick={() => router.push(`/dashboard?company=${companyId}`)}
-          className="mt-6 w-full text-sm text-gray-500 hover:text-gray-700"
+          className="mt-6 w-full text-xs text-white/30 hover:text-white/60 tracking-widest"
         >
-          {isSuccess ? '← Back to dashboard' : 'Skip for now →'}
+          {isSuccess ? '\u2190 Back to dashboard' : 'Skip for now \u2192'}
         </button>
       </div>
     </div>

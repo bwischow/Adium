@@ -248,6 +248,7 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
         median_value:   percentile(values, 50),
         p25_value:      percentile(values, 25),
         p75_value:      percentile(values, 75),
+        p90_value:      percentile(values, 90),
         account_count:  values.length,
         calculated_at:  new Date().toISOString(),
       })

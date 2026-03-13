@@ -4,7 +4,9 @@
  *
  * Returns two time series:
  *   userSeries  — user's own daily derived metric values
- *   benchmarkSeries — median + P25/P75 from benchmark_cache for their segment
+ *   benchmarkSeries — P50/P75/P90 from benchmark_cache for their segment
+ *
+ * When not enough peers exist, falls back to user's own historical percentiles.
  */
 
 import { NextResponse } from 'next/server'
@@ -12,6 +14,11 @@ import { createClient } from '@/lib/supabase/server'
 import { deriveMetric } from '@/lib/metrics'
 import type { MetricName, DashboardData, Platform, SpendQuartile } from '@/types'
 import { SPEND_TIER_LABELS } from '@/types'
+
+function percentileCalc(sorted: number[], p: number): number {
+  const idx = Math.ceil((p / 100) * sorted.length) - 1
+  return sorted[Math.max(0, idx)]
+}
 
 export async function GET(
   request: Request,
@@ -77,7 +84,7 @@ export async function GET(
   const benchmarkQuery = (q: number | null) =>
     supabase
       .from('benchmark_cache')
-      .select('date, median_value, p25_value, p75_value, account_count')
+      .select('date, median_value, p75_value, p90_value, account_count')
       .eq('industry_id', industryId)
       .eq('platform', platform)
       .eq('metric_name', metric)
@@ -97,22 +104,49 @@ export async function GET(
   }
 
   const benchmarkSeries = (benchRows ?? []).map(row => ({
-    date:   row.date,
-    median: row.median_value,
-    p25:    row.p25_value,
-    p75:    row.p75_value,
+    date: row.date,
+    p50:  row.median_value,
+    p75:  row.p75_value,
+    p90:  row.p90_value,
   }))
 
   // Determine if there are enough peers for meaningful benchmarks
   const maxCount = benchRows?.reduce((m, r) => Math.max(m, r.account_count ?? 0), 0) ?? 0
   const hasEnoughPeers = maxCount >= 5
 
+  // Historical fallback: when not enough peers, compare against user's own history
+  let isHistoricalFallback = false
+  let finalBenchmarkSeries = benchmarkSeries
+
+  if (!hasEnoughPeers && userSeries.length > 0) {
+    const historicalValues = userSeries
+      .map(d => d.value)
+      .filter((v): v is number => v !== null)
+      .sort((a, b) => a - b)
+
+    if (historicalValues.length >= 3) {
+      const p50 = percentileCalc(historicalValues, 50)
+      const p75 = percentileCalc(historicalValues, 75)
+      const p90 = percentileCalc(historicalValues, 90)
+
+      // Return flat reference lines at historical percentile values
+      finalBenchmarkSeries = userSeries.map(d => ({
+        date: d.date,
+        p50,
+        p75,
+        p90,
+      }))
+      isHistoricalFallback = true
+    }
+  }
+
   const result: DashboardData = {
     userSeries,
-    benchmarkSeries,
+    benchmarkSeries: finalBenchmarkSeries,
     accountCount: maxCount,
     hasEnoughPeers,
     spendTierLabel,
+    isHistoricalFallback,
   }
 
   return NextResponse.json(result)
