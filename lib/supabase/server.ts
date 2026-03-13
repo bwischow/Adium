@@ -37,6 +37,7 @@ export async function createClient() {
           })
         },
         setAll(cookiesToSet: CookieEntry[]) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options)
@@ -68,6 +69,7 @@ export function createServiceClient() {
           return cookieStore.getAll()
         },
         setAll(cookiesToSet: CookieEntry[]) {
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)

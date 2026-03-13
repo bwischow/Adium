@@ -3,9 +3,26 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
-interface GoogleAccount {
+interface AdAccount {
   id:   string
   name: string
+}
+
+type PlatformStep = 'google-select' | 'meta-select'
+
+const PLATFORM_CONFIG: Record<PlatformStep, { label: string; accountsUrl: string; selectUrl: string; noAccountsMsg: string }> = {
+  'google-select': {
+    label:          'Google Ads',
+    accountsUrl:    '/api/connect/google/accounts',
+    selectUrl:      '/api/connect/google/select',
+    noAccountsMsg:  'No Google Ads accounts found for this Google account.',
+  },
+  'meta-select': {
+    label:          'Meta Ads',
+    accountsUrl:    '/api/connect/meta/accounts',
+    selectUrl:      '/api/connect/meta/select',
+    noAccountsMsg:  'No Meta Ads accounts found for this Meta account.',
+  },
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -22,45 +39,49 @@ export default function ConnectAccountPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const step        = searchParams.get('step')
+  const step        = searchParams.get('step') as PlatformStep | null
   const sessionId   = searchParams.get('session')
   const status      = searchParams.get('status')
   const errorReason = searchParams.get('error_reason')
   const errorDetail = searchParams.get('error_detail')
 
   const [googleAccounts, setGoogleAccounts]   = useState<GoogleAccount[]>([])
+  // --- Account selection state (shared by Google & Meta) ---
+  const [accounts, setAccounts]               = useState<AdAccount[]>([])
   const [selectedIds, setSelectedIds]         = useState<string[]>([])
   const [loadingAccounts, setLoadingAccounts] = useState(false)
   const [submitting, setSubmitting]           = useState(false)
   const [fetchError, setFetchError]           = useState('')
   const [syncError, setSyncError]             = useState('')
 
+  const platformConfig = step ? PLATFORM_CONFIG[step] : null
+
   useEffect(() => {
-    if (step === 'google-select' && sessionId) {
-      setLoadingAccounts(true)
-      setFetchError('')
-      fetch(`/api/connect/google/accounts?session=${sessionId}`)
-        .then(async (r) => {
-          if (!r.ok) {
-            const data = await r.json().catch(() => ({}))
-            throw new Error(data.error || `Failed to load accounts (${r.status})`)
-          }
-          return r.json()
-        })
-        .then(data => {
-          if (Array.isArray(data.accounts) && data.accounts.length > 0) {
-            setGoogleAccounts(data.accounts)
-            setSelectedIds(data.accounts.map((a: GoogleAccount) => a.id))
-          } else {
-            setFetchError('No Google Ads accounts found for this Google account.')
-          }
-        })
-        .catch((err) => {
-          setFetchError(err.message || 'Failed to load accounts.')
-        })
-        .finally(() => setLoadingAccounts(false))
-    }
-  }, [step, sessionId])
+    if (!platformConfig || !sessionId) return
+
+    setLoadingAccounts(true)
+    setFetchError('')
+    fetch(`${platformConfig.accountsUrl}?session=${sessionId}`)
+      .then(async (r) => {
+        if (!r.ok) {
+          const data = await r.json().catch(() => ({}))
+          throw new Error(data.error || `Failed to load accounts (${r.status})`)
+        }
+        return r.json()
+      })
+      .then(data => {
+        if (Array.isArray(data.accounts) && data.accounts.length > 0) {
+          setAccounts(data.accounts)
+          setSelectedIds(data.accounts.map((a: AdAccount) => a.id))
+        } else {
+          setFetchError(platformConfig.noAccountsMsg)
+        }
+      })
+      .catch((err) => {
+        setFetchError(err.message || 'Failed to load accounts.')
+      })
+      .finally(() => setLoadingAccounts(false))
+  }, [step, sessionId]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleAccount = (id: string) => {
     setSelectedIds(prev =>
@@ -69,11 +90,11 @@ export default function ConnectAccountPage() {
   }
 
   const handleConfirmAccounts = async () => {
-    if (selectedIds.length === 0 || submitting || !sessionId) return
+    if (!platformConfig || selectedIds.length === 0 || submitting || !sessionId) return
     setSubmitting(true)
     setSyncError('')
     try {
-      const res = await fetch('/api/connect/google/select', {
+      const res = await fetch(platformConfig.selectUrl, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ selectedIds, sessionId }),
@@ -96,8 +117,8 @@ export default function ConnectAccountPage() {
     window.location.href = `/api/connect/${platform}/start?company_id=${companyId}`
   }
 
-  // --- Google account selection screen ---
-  if (step === 'google-select' && sessionId) {
+  // --- Account selection screen (Google or Meta) ---
+  if (platformConfig && sessionId) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-void">
         <div className="border border-white/20 p-8 w-full max-w-lg">
@@ -107,6 +128,11 @@ export default function ConnectAccountPage() {
 
           <p className="text-xs text-white/40 mb-6 tracking-wide">
             Select the Google Ads accounts you want to connect.
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-lg">
+          <h1 className="text-2xl font-bold mb-2">Choose accounts to sync</h1>
+          <p className="text-gray-500 text-sm mb-6">
+            Select the {platformConfig.label} accounts you want to connect to this company.
           </p>
 
           {fetchError && (
@@ -128,6 +154,12 @@ export default function ConnectAccountPage() {
           ) : googleAccounts.length > 0 ? (
             <div className="space-y-px mb-6 border border-white/20">
               {googleAccounts.map((account, i) => (
+            <p className="text-sm text-gray-400">Loading accounts...</p>
+          ) : accounts.length === 0 && !fetchError ? (
+            <p className="text-sm text-gray-500">{platformConfig.noAccountsMsg}</p>
+          ) : accounts.length > 0 ? (
+            <div className="space-y-2 mb-6">
+              {accounts.map(account => (
                 <label
                   key={account.id}
                   className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
@@ -151,7 +183,7 @@ export default function ConnectAccountPage() {
             </div>
           ) : null}
 
-          {googleAccounts.length > 0 && (
+          {accounts.length > 0 && (
             <button
               onClick={handleConfirmAccounts}
               disabled={selectedIds.length === 0 || submitting || loadingAccounts}

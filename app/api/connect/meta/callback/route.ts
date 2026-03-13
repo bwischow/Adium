@@ -1,15 +1,20 @@
 import { NextResponse } from 'next/server'
-import { createServiceClient } from '@/lib/supabase/server'
-import { pullDailyMetrics } from '@/lib/ingestion'
+import { createClient } from '@supabase/supabase-js'
 
 /**
  * GET /api/connect/meta/callback
  *
  * Meta OAuth callback. Exchanges the auth code for a short-lived token,
  * upgrades to a long-lived token (~60 days), fetches the user's Meta
- * ad accounts, upserts them into the database, and triggers an initial
- * data pull for each account.
+ * ad accounts, stores a pending session, and redirects to account selection.
  */
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -28,7 +33,7 @@ export async function GET(request: Request) {
     const decoded = JSON.parse(Buffer.from(state, 'base64url').toString())
     companyId = decoded.companyId
     userId    = decoded.userId
-    if (!companyId) throw new Error('Missing companyId in state')
+    if (!companyId || !userId) throw new Error('Missing companyId or userId in state')
   } catch (err) {
     console.error('[meta/callback] Failed to decode state:', err)
     return NextResponse.redirect(`${origin}/dashboard?connect=error`)
@@ -110,42 +115,30 @@ export async function GET(request: Request) {
     return errorRedirect('no_accounts_found')
   }
 
-  // ── Step 4: Upsert accounts into database ──────────────────────
-  const supabase = createServiceClient()
+  // ── Step 4: Store pending session in Supabase ─────────────────
+  const supabase = getServiceClient()
 
-  for (const metaAccount of adAccounts) {
-    const { data: account, error: upsertError } = await supabase
-      .from('ad_accounts')
-      .upsert({
-        company_id:          companyId,
-        platform:            'meta',
-        platform_account_id: metaAccount.id,
-        account_name:        metaAccount.name,
-        access_token:        accessToken,
-        // Long-lived tokens expire in ~60 days
-        token_expires_at: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString(),
-        is_active: true,
-      }, { onConflict: 'platform,platform_account_id' })
-      .select()
-      .single()
+  const { data: session, error: insertError } = await supabase
+    .from('pending_oauth_sessions')
+    .insert({
+      company_id:    companyId,
+      user_id:       userId,
+      platform:      'meta',
+      access_token:  accessToken,
+      refresh_token: null,
+      expires_in:    60 * 24 * 60 * 60, // ~60 days in seconds
+      accounts:      adAccounts,
+    })
+    .select('id')
+    .single()
 
-    if (upsertError) {
-      console.error(`[meta/callback] Failed to upsert account ${metaAccount.id}:`, upsertError)
-      continue
-    }
-
-    if (account) {
-      try {
-        await pullDailyMetrics(account.id, 'meta', accessToken, metaAccount.id)
-      } catch (pullErr) {
-        console.warn(`[meta/callback] Initial data pull failed for ${metaAccount.id}:`, pullErr)
-        // Don't block — account is saved, data will be pulled by nightly cron
-      }
-    }
+  if (insertError || !session) {
+    console.error('[meta/callback] Failed to store pending session:', insertError)
+    return errorRedirect('session_storage_failed')
   }
 
-  // ── Step 5: Redirect to connect page with success status ────────
+  // ── Step 5: Redirect to account selection screen ──────────────
   return NextResponse.redirect(
-    `${origin}/companies/${companyId}/connect?status=success`
+    `${origin}/companies/${companyId}/connect?step=meta-select&session=${session.id}`
   )
 }
