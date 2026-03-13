@@ -21,7 +21,8 @@ export async function pullDailyMetrics(
   platform: 'google_ads' | 'meta',
   accessToken: string,
   platformAccountId: string,
-  daysBack = 1
+  daysBack = 1,
+  loginCustomerId?: string,
 ): Promise<void> {
   const endDate   = new Date()
   const startDate = subDays(endDate, daysBack)
@@ -29,7 +30,7 @@ export async function pullDailyMetrics(
   let rows: DailyRow[]
 
   if (platform === 'google_ads') {
-    rows = await fetchGoogleAdsMetrics(accessToken, platformAccountId, startDate, endDate)
+    rows = await fetchGoogleAdsMetrics(accessToken, platformAccountId, startDate, endDate, loginCustomerId)
   } else {
     rows = await fetchMetaMetrics(accessToken, platformAccountId, startDate, endDate)
   }
@@ -78,7 +79,8 @@ async function fetchGoogleAdsMetrics(
   accessToken: string,
   platformAccountId: string,
   startDate: Date,
-  endDate: Date
+  endDate: Date,
+  loginCustomerId?: string,
 ): Promise<DailyRow[]> {
   const customerId = platformAccountId.replace(/-/g, '')
 
@@ -95,14 +97,19 @@ async function fetchGoogleAdsMetrics(
     ORDER BY segments.date ASC
   `
 
+  // login-customer-id is the MCC ID that grants access to this account.
+  // For standalone accounts it equals the account's own customer ID.
+  const loginId = loginCustomerId ?? customerId
+
   const res = await fetchWithRetry(
     `https://googleads.googleapis.com/v20/customers/${customerId}/googleAds:search`,
     {
       method: 'POST',
       headers: {
-        Authorization:     `Bearer ${accessToken}`,
-        'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
-        'Content-Type':    'application/json',
+        Authorization:        `Bearer ${accessToken}`,
+        'developer-token':    process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+        'login-customer-id':  loginId,
+        'Content-Type':       'application/json',
       },
       body: JSON.stringify({ query: gaql }),
     }
@@ -132,6 +139,7 @@ export async function pullGoogleAdsForAccount(account: {
   access_token: string
   refresh_token: string | null
   token_expires_at: string | null
+  login_customer_id: string | null
 }): Promise<void> {
   let accessToken = account.access_token
 
@@ -153,6 +161,9 @@ export async function pullGoogleAdsForAccount(account: {
       .eq('id', account.id)
   }
 
+  const customerId = account.platform_account_id.replace(/-/g, '')
+  const loginId    = account.login_customer_id ?? customerId
+
   const endDate   = new Date()
   const startDate = subDays(endDate, 1)  // nightly job: just yesterday
 
@@ -170,17 +181,24 @@ export async function pullGoogleAdsForAccount(account: {
   `
 
   const res = await fetchWithRetry(
-    `https://googleads.googleapis.com/v20/customers/${account.platform_account_id}/googleAds:search`,
+    `https://googleads.googleapis.com/v20/customers/${customerId}/googleAds:search`,
     {
       method: 'POST',
       headers: {
-        Authorization:     `Bearer ${accessToken}`,
-        'developer-token': process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
-        'Content-Type':    'application/json',
+        Authorization:        `Bearer ${accessToken}`,
+        'developer-token':    process.env.GOOGLE_ADS_DEVELOPER_TOKEN!,
+        'login-customer-id':  loginId,
+        'Content-Type':       'application/json',
       },
       body: JSON.stringify({ query: gaql }),
     }
   )
+
+  if (!res.ok) {
+    const errBody = await res.text()
+    console.error(`[google_ads] API error ${res.status} for ${customerId}:`, errBody)
+    throw new Error(`Google Ads API error: ${res.status}`)
+  }
 
   const data = await res.json()
   const rows: DailyRow[] = (data.results ?? []).map((r: any) => ({
@@ -211,7 +229,7 @@ export async function pullGoogleAdsForAccount(account: {
       { onConflict: 'ad_account_id,date' }
     )
 
-  console.log(`[google_ads] pulled ${rows.length} rows for account ${account.platform_account_id}`)
+  console.log(`[google_ads] pulled ${rows.length} rows for account ${customerId}`)
 }
 
 async function refreshGoogleToken(refreshToken: string): Promise<string> {
@@ -258,26 +276,74 @@ async function fetchMetaMetrics(
     `https://graph.facebook.com/v19.0/${platformAccountId}/insights?${params}`
   )
 
+  if (!res.ok) {
+    const errBody = await res.text()
+    console.error(`[meta] API error ${res.status} for ${platformAccountId}:`, errBody)
+    throw new Error(`Meta Ads API error: ${res.status}`)
+  }
+
   const data = await res.json()
+
+  if (data.error) {
+    console.error(`[meta] Graph API error for ${platformAccountId}:`, data.error)
+    throw new Error(`Meta Graph API error: ${data.error.message}`)
+  }
+
   const items: any[] = data.data ?? []
+  console.log(`[meta] fetched ${items.length} insight rows for ${platformAccountId}`)
 
   return items.map(item => ({
     date:             item.date_start,
     impressions:      Number(item.impressions ?? 0),
     clicks:           Number(item.clicks ?? 0),
     spend:            Number(item.spend ?? 0),
-    conversions:      extractActionValue(item.actions, 'purchase'),
-    conversion_value: extractActionValue(item.action_values, 'purchase'),
+    conversions:      extractConversions(item.actions),
+    conversion_value: extractConversionValue(item.action_values),
   }))
 }
 
-function extractActionValue(actions: any[] | undefined, actionType: string): number {
+/**
+ * Extract total conversions from Meta actions array.
+ * Matches purchase events across all common action types:
+ *   - offsite_conversion.fb_pixel_purchase (pixel-based)
+ *   - omni_purchase (cross-channel)
+ *   - purchase (standard)
+ * Falls back to 0 if none found.
+ */
+function extractConversions(actions: any[] | undefined): number {
   if (!actions) return 0
-  const match = actions.find(a =>
-    a.action_type === `offsite_conversion.fb_pixel_${actionType}` ||
-    a.action_type === `omni_${actionType}`
-  )
-  return match ? Number(match.value) : 0
+  const purchaseTypes = [
+    'offsite_conversion.fb_pixel_purchase',
+    'omni_purchase',
+    'purchase',
+  ]
+  let total = 0
+  for (const action of actions) {
+    if (purchaseTypes.includes(action.action_type)) {
+      total = Math.max(total, Number(action.value ?? 0))
+    }
+  }
+  return total
+}
+
+/**
+ * Extract total conversion value from Meta action_values array.
+ * Same matching logic as extractConversions.
+ */
+function extractConversionValue(actionValues: any[] | undefined): number {
+  if (!actionValues) return 0
+  const purchaseTypes = [
+    'offsite_conversion.fb_pixel_purchase',
+    'omni_purchase',
+    'purchase',
+  ]
+  let total = 0
+  for (const action of actionValues) {
+    if (purchaseTypes.includes(action.action_type)) {
+      total = Math.max(total, Number(action.value ?? 0))
+    }
+  }
+  return total
 }
 
 // ---------------------------------------------------------------------------

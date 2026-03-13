@@ -90,6 +90,12 @@ export default function CompanySidebar({
         >
           + Connect source
         </Link>
+        <Link
+          href={`/companies/${selectedCompanyId}/settings`}
+          className="block text-[10px] text-black/50 hover:text-black mt-2 tracking-widest font-medium"
+        >
+          Settings
+        </Link>
       </div>
 
       {/* Logout */}

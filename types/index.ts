@@ -15,6 +15,9 @@ export interface Company {
   user_id: string
   name: string
   industry_id: number
+  website?: string | null
+  phone?: string | null
+  email?: string | null
   created_at: string
   industry?: Industry
 }
