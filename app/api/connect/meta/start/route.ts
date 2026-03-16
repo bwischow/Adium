@@ -20,6 +20,6 @@ export async function GET(request: Request) {
   })
 
   return NextResponse.redirect(
-    `https://www.facebook.com/v19.0/dialog/oauth?${params}`
+    `https://www.facebook.com/v25.0/dialog/oauth?${params}`
   )
 }

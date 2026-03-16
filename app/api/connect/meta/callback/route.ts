@@ -56,7 +56,7 @@ export async function GET(request: Request) {
   })
 
   const tokenRes = await fetch(
-    `https://graph.facebook.com/v19.0/oauth/access_token?${tokenParams}`
+    `https://graph.facebook.com/v25.0/oauth/access_token?${tokenParams}`
   )
 
   if (!tokenRes.ok) {
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
   })
 
   const longRes = await fetch(
-    `https://graph.facebook.com/v19.0/oauth/access_token?${longParams}`
+    `https://graph.facebook.com/v25.0/oauth/access_token?${longParams}`
   )
 
   if (!longRes.ok) {
@@ -90,7 +90,7 @@ export async function GET(request: Request) {
 
   // ── Step 3: Fetch the user's ad accounts ────────────────────────
   const accountsRes = await fetch(
-    `https://graph.facebook.com/v19.0/me/adaccounts?fields=id,name,account_status&access_token=${accessToken}`
+    `https://graph.facebook.com/v25.0/me/adaccounts?fields=id,name,account_status&access_token=${accessToken}`
   )
 
   if (!accountsRes.ok) {
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
 
   // ── Step 3b: Fetch the user's Pages (pages_show_list) ───────────
   const pagesRes = await fetch(
-    `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${accessToken}`
+    `https://graph.facebook.com/v25.0/me/accounts?fields=id,name,access_token&access_token=${accessToken}`
   )
   const pagesData = pagesRes.ok ? await pagesRes.json() : { data: [] }
   const pages: { id: string; name: string; access_token?: string }[] = pagesData.data ?? []
@@ -121,7 +121,7 @@ export async function GET(request: Request) {
   // ── Step 3c: Read Page engagement data (pages_read_engagement) ──
   if (pages.length > 0 && pages[0].access_token) {
     const feedRes = await fetch(
-      `https://graph.facebook.com/v19.0/${pages[0].id}/feed?fields=id,message,created_time&limit=1&access_token=${pages[0].access_token}`
+      `https://graph.facebook.com/v25.0/${pages[0].id}/feed?fields=id,message,created_time&limit=1&access_token=${pages[0].access_token}`
     )
     const feedBody = await feedRes.text()
     console.log(`[meta/callback] Page feed response (${feedRes.status}):`, feedBody)

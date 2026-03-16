@@ -273,7 +273,7 @@ async function fetchMetaMetrics(
   })
 
   const res = await fetchWithRetry(
-    `https://graph.facebook.com/v19.0/${platformAccountId}/insights?${params}`
+    `https://graph.facebook.com/v25.0/${platformAccountId}/insights?${params}`
   )
 
   if (!res.ok) {
