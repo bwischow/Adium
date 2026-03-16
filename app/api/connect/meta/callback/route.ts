@@ -118,15 +118,38 @@ export async function GET(request: Request) {
   const pages: { id: string; name: string; access_token?: string }[] = pagesData.data ?? []
   console.log(`[meta/callback] Found ${pages.length} Pages:`, pages.map(p => ({ id: p.id, name: p.name })))
 
-  // ── Step 3c: Read Page engagement data (pages_read_engagement) ──
-  if (pages.length > 0) {
-    const pageRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pages[0].id}?fields=id,name,fan_count,followers_count&access_token=${accessToken}`
+  // ── Step 3c–3e: Exercise Page permissions ──────────────────────
+  if (pages.length > 0 && pages[0].access_token) {
+    const pageId    = pages[0].id
+    const pageToken = pages[0].access_token
+
+    // pages_read_engagement — read Page-level insights
+    const engageRes = await fetch(
+      `https://graph.facebook.com/v25.0/${pageId}/insights?metric=page_impressions&period=day&limit=1&access_token=${pageToken}`
     )
-    const pageBody = await pageRes.text()
-    console.log(`[meta/callback] Page engagement response (${pageRes.status}):`, pageBody)
+    console.log(`[meta/callback] pages_read_engagement (${engageRes.status}):`, await engageRes.text())
+
+    // pages_manage_metadata — subscribe app to Page webhooks
+    const metaRes = await fetch(
+      `https://graph.facebook.com/v25.0/${pageId}/subscribed_apps`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subscribed_fields: ['feed'],
+          access_token: pageToken,
+        }),
+      }
+    )
+    console.log(`[meta/callback] pages_manage_metadata (${metaRes.status}):`, await metaRes.text())
+
+    // pages_manage_ads — read ad posts for the Page
+    const adsRes = await fetch(
+      `https://graph.facebook.com/v25.0/${pageId}/ads_posts?fields=id,message&limit=1&access_token=${pageToken}`
+    )
+    console.log(`[meta/callback] pages_manage_ads (${adsRes.status}):`, await adsRes.text())
   } else {
-    console.log('[meta/callback] No Pages found — pages_read_engagement call skipped')
+    console.log('[meta/callback] No Pages with access tokens — Page permission calls skipped')
   }
 
   if (adAccounts.length === 0) {
