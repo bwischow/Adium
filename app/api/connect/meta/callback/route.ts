@@ -125,7 +125,7 @@ export async function GET(request: Request) {
 
     // pages_read_engagement — read Page-level insights
     const engageRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pageId}/insights?metric=page_impressions&period=day&limit=1&access_token=${pageToken}`
+      `https://graph.facebook.com/v25.0/${pageId}/insights?metric=page_views_total&period=day&limit=1&access_token=${pageToken}`
     )
     console.log(`[meta/callback] pages_read_engagement (${engageRes.status}):`, await engageRes.text())
 
