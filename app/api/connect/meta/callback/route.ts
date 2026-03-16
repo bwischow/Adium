@@ -110,12 +110,19 @@ export async function GET(request: Request) {
   const accountsData = await accountsRes.json()
   const adAccounts: { id: string; name: string }[] = accountsData.data ?? []
 
-  // ── Step 3b: Fetch the user's Pages (pages_read_engagement) ────
+  // ── Step 3b: Fetch the user's Pages (pages_show_list) ───────────
   const pagesRes = await fetch(
-    `https://graph.facebook.com/v19.0/me/accounts?fields=id,name&access_token=${accessToken}`
+    `https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token&access_token=${accessToken}`
   )
   const pagesData = pagesRes.ok ? await pagesRes.json() : { data: [] }
-  const pages: { id: string; name: string }[] = pagesData.data ?? []
+  const pages: { id: string; name: string; access_token?: string }[] = pagesData.data ?? []
+
+  // ── Step 3c: Read Page engagement data (pages_read_engagement) ──
+  if (pages.length > 0 && pages[0].access_token) {
+    await fetch(
+      `https://graph.facebook.com/v19.0/${pages[0].id}/feed?fields=id,message,created_time&limit=1&access_token=${pages[0].access_token}`
+    ).catch(() => {})  // best-effort; don't block the flow
+  }
 
   if (adAccounts.length === 0) {
     console.error('[meta/callback] No ad accounts found for this Meta user')
