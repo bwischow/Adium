@@ -116,12 +116,17 @@ export async function GET(request: Request) {
   )
   const pagesData = pagesRes.ok ? await pagesRes.json() : { data: [] }
   const pages: { id: string; name: string; access_token?: string }[] = pagesData.data ?? []
+  console.log(`[meta/callback] Found ${pages.length} Pages:`, pages.map(p => ({ id: p.id, name: p.name })))
 
   // ── Step 3c: Read Page engagement data (pages_read_engagement) ──
   if (pages.length > 0 && pages[0].access_token) {
-    await fetch(
+    const feedRes = await fetch(
       `https://graph.facebook.com/v19.0/${pages[0].id}/feed?fields=id,message,created_time&limit=1&access_token=${pages[0].access_token}`
-    ).catch(() => {})  // best-effort; don't block the flow
+    )
+    const feedBody = await feedRes.text()
+    console.log(`[meta/callback] Page feed response (${feedRes.status}):`, feedBody)
+  } else {
+    console.log('[meta/callback] No Pages with access tokens found — pages_read_engagement call skipped')
   }
 
   if (adAccounts.length === 0) {
