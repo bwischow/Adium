@@ -120,11 +120,11 @@ export async function GET(request: Request) {
 
   // ── Step 3c: Read Page engagement data (pages_read_engagement) ──
   if (pages.length > 0) {
-    const feedRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pages[0].id}/feed?fields=id,message,created_time&limit=1&access_token=${accessToken}`
+    const pageRes = await fetch(
+      `https://graph.facebook.com/v25.0/${pages[0].id}?fields=id,name,fan_count,followers_count&access_token=${accessToken}`
     )
-    const feedBody = await feedRes.text()
-    console.log(`[meta/callback] Page feed response (${feedRes.status}):`, feedBody)
+    const pageBody = await pageRes.text()
+    console.log(`[meta/callback] Page engagement response (${pageRes.status}):`, pageBody)
   } else {
     console.log('[meta/callback] No Pages found — pages_read_engagement call skipped')
   }
