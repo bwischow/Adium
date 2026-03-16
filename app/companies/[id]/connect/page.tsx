@@ -71,7 +71,7 @@ export default function ConnectAccountPage() {
       .then(data => {
         if (Array.isArray(data.accounts) && data.accounts.length > 0) {
           setAccounts(data.accounts)
-          setSelectedIds(data.accounts.map((a: AdAccount) => a.id))
+          setSelectedIds([])
         } else {
           setFetchError(platformConfig.noAccountsMsg)
         }

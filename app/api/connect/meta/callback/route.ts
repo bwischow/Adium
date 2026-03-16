@@ -110,6 +110,13 @@ export async function GET(request: Request) {
   const accountsData = await accountsRes.json()
   const adAccounts: { id: string; name: string }[] = accountsData.data ?? []
 
+  // ── Step 3b: Fetch the user's Pages (pages_read_engagement) ────
+  const pagesRes = await fetch(
+    `https://graph.facebook.com/v19.0/me/accounts?fields=id,name&access_token=${accessToken}`
+  )
+  const pagesData = pagesRes.ok ? await pagesRes.json() : { data: [] }
+  const pages: { id: string; name: string }[] = pagesData.data ?? []
+
   if (adAccounts.length === 0) {
     console.error('[meta/callback] No ad accounts found for this Meta user')
     return errorRedirect('no_accounts_found')
@@ -128,6 +135,7 @@ export async function GET(request: Request) {
       refresh_token: null,
       expires_in:    60 * 24 * 60 * 60, // ~60 days in seconds
       accounts:      adAccounts,
+      pages,
     })
     .select('id')
     .single()

@@ -73,8 +73,17 @@ export default function CompanySidebar({
                   <span className="text-[10px] font-bold opacity-40">
                     {String(i + 1).padStart(2, '0')}
                   </span>
-                  <span className="truncate tracking-wide">
-                    {a.account_name || platformLabel(a.platform)}
+                  <span className="flex flex-col min-w-0">
+                    <span className="truncate tracking-wide">
+                      {a.account_name || platformLabel(a.platform)}
+                    </span>
+                    <span className={`text-[9px] tracking-widest ${
+                      selectedAccountId === a.id
+                        ? 'text-peach/60'
+                        : 'text-black/30'
+                    }`}>
+                      {platformLabel(a.platform)}
+                    </span>
                   </span>
                   <span className={`ml-auto w-1.5 h-1.5 ${
                     selectedAccountId === a.id ? 'bg-peach' : 'bg-black/20'
