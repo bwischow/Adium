@@ -98,7 +98,7 @@ export default function MetricSummaryCards({ current, previous, onMetricClick, s
               <p className={`text-[10px] mt-1 tracking-widest ${
                 isSelected ? 'text-black/40' : 'text-white/30'
               }`}>
-                P50: {fmt(benchmarkP50)}
+                Median: {fmt(benchmarkP50)}
               </p>
             )}
           </button>

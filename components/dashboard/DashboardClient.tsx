@@ -51,7 +51,7 @@ export default function DashboardClient({ companies }: Props) {
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>(adAccounts[0]?.id ?? '')
   const [selectedMetric, setSelectedMetric]       = useState<MetricName>('ctr')
-  const [preset, setPreset]                        = useState('24h')
+  const [preset, setPreset]                        = useState('30d')
   const [customStart, setCustomStart]              = useState('')
   const [customEnd, setCustomEnd]                  = useState('')
 

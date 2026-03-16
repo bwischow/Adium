@@ -59,9 +59,9 @@ export default function BenchmarkChart({
 
   const tooltipNames: Record<string, string> = {
     you: 'You',
-    p50: isHistoricalFallback ? 'Your P50' : 'Benchmark P50',
-    p75: isHistoricalFallback ? 'Your P75' : 'Benchmark P75',
-    p90: isHistoricalFallback ? 'Your P90' : 'Benchmark P90',
+    p50: isHistoricalFallback ? 'Your Median' : 'Median (50th pctl)',
+    p75: isHistoricalFallback ? 'Your 75th pctl' : '75th Percentile',
+    p90: isHistoricalFallback ? 'Your 90th pctl' : '90th Percentile',
   }
 
   return (
