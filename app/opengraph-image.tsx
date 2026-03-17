@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Adium — Know If Your Ads Are Actually Good'
+export const alt = 'Adium — How Good Are Your Ads?'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -92,8 +92,8 @@ export default async function Image() {
           {/* Tagline — large, bottom */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', fontSize: '42px', fontWeight: 900, color: '#ffffff', letterSpacing: '-1px', lineHeight: 1.1 }}>
-              <span>Know if your ads are</span>
-              <span>actually good.</span>
+              <span>How good are</span>
+              <span>your ads?</span>
             </div>
 
             {/* Legend */}
