@@ -15,6 +15,8 @@ interface MetricSnapshot {
   cpm: number | null
   cpa: number | null
   roas: number | null
+  cpl: number | null
+  leads: number
   days: number
 }
 
