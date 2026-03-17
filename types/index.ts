@@ -2,7 +2,7 @@ export type Platform = 'google_ads' | 'meta'
 
 export type SpendQuartile = 1 | 2 | 3 | 4
 
-export type MetricName = 'cpc' | 'cpm' | 'ctr' | 'roas' | 'cpa'
+export type MetricName = 'cpc' | 'cpm' | 'ctr' | 'roas' | 'cpa' | 'cpl'
 
 export interface Industry {
   id: number
@@ -18,6 +18,7 @@ export interface Company {
   website?: string | null
   phone?: string | null
   email?: string | null
+  industry_other?: string | null
   created_at: string
   industry?: Industry
 }
@@ -41,6 +42,7 @@ export interface DailyMetric {
   spend: number
   conversions: number
   conversion_value: number
+  leads: number
   pulled_at: string
 }
 
@@ -102,6 +104,7 @@ export const METRIC_LABELS: Record<MetricName, string> = {
   ctr: 'CTR',
   roas: 'ROAS',
   cpa: 'CPA',
+  cpl: 'CPL',
 }
 
 export const METRIC_FORMATS: Record<MetricName, (v: number) => string> = {
@@ -110,15 +113,28 @@ export const METRIC_FORMATS: Record<MetricName, (v: number) => string> = {
   ctr: (v) => `${(v * 100).toFixed(2)}%`,
   roas: (v) => `${v.toFixed(2)}x`,
   cpa: (v) => `$${v.toFixed(2)}`,
+  cpl: (v) => `$${v.toFixed(2)}`,
 }
 
 export const INDUSTRIES: Industry[] = [
-  { id: 1, name: 'E-commerce / DTC', slug: 'ecommerce-dtc' },
-  { id: 2, name: 'SaaS / Software', slug: 'saas-software' },
-  { id: 3, name: 'Local Services', slug: 'local-services' },
-  { id: 4, name: 'Healthcare / Wellness', slug: 'healthcare-wellness' },
-  { id: 5, name: 'Financial Services', slug: 'financial-services' },
-  { id: 6, name: 'Education / EdTech', slug: 'education-edtech' },
-  { id: 7, name: 'Real Estate', slug: 'real-estate' },
-  { id: 8, name: 'Other', slug: 'other' },
+  { id: 1,  name: 'E-commerce / DTC',        slug: 'ecommerce-dtc' },
+  { id: 2,  name: 'SaaS / Software',         slug: 'saas-software' },
+  { id: 3,  name: 'Local Services',           slug: 'local-services' },
+  { id: 4,  name: 'Healthcare / Wellness',    slug: 'healthcare-wellness' },
+  { id: 5,  name: 'Financial Services',       slug: 'financial-services' },
+  { id: 6,  name: 'Education / EdTech',       slug: 'education-edtech' },
+  { id: 7,  name: 'Real Estate',              slug: 'real-estate' },
+  { id: 9,  name: 'Marketplaces',             slug: 'marketplaces' },
+  { id: 10, name: 'Travel / Hospitality',     slug: 'travel-hospitality' },
+  { id: 11, name: 'Food / Beverage / CPG',    slug: 'food-beverage-cpg' },
+  { id: 12, name: 'Automotive',               slug: 'automotive' },
+  { id: 13, name: 'Fashion / Apparel',        slug: 'fashion-apparel' },
+  { id: 14, name: 'Home / Garden',            slug: 'home-garden' },
+  { id: 15, name: 'Beauty / Personal Care',   slug: 'beauty-personal-care' },
+  { id: 16, name: 'B2B / Professional Services', slug: 'b2b-professional-services' },
+  { id: 17, name: 'Media / Entertainment',    slug: 'media-entertainment' },
+  { id: 18, name: 'Fitness / Sports',         slug: 'fitness-sports' },
+  { id: 19, name: 'Nonprofit / Cause',        slug: 'nonprofit-cause' },
+  { id: 20, name: 'Legal',                    slug: 'legal' },
+  { id: 8,  name: 'Other',                    slug: 'other' },
 ]

@@ -1,14 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  useEffect(() => {
-    console.log('[Login Page] Component mounted')
-  }, [])
-
   const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
   const [error, setError]       = useState('')
@@ -20,8 +16,6 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
 
-    console.log('[Login Page] Submitting login...')
-
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -31,27 +25,14 @@ export default function LoginPage() {
 
       const data = await response.json()
 
-      console.log('[Login Page] Response:', {
-        status: response.status,
-        ok: response.ok,
-        data,
-      })
-
       if (!response.ok) {
-        const errorCode = data.code || 'UNKNOWN_ERROR'
-        const errorMessage = data.error || 'Login failed'
-
-        console.log('[Login Page] ERROR:', { code: errorCode, message: errorMessage })
-        setError(`[${errorCode}] ${errorMessage}`)
+        setError(data.error || 'Login failed. Please try again.')
         return
       }
 
-      console.log('[Login Page] SUCCESS! Navigating to dashboard...')
       window.location.assign('/dashboard')
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Something went wrong'
-      console.log('[Login Page] EXCEPTION:', errorMessage)
-      setError(`[NETWORK_ERROR] ${errorMessage}`)
+    } catch {
+      setError('Unable to connect. Please check your internet and try again.')
     } finally {
       setLoading(false)
     }
@@ -66,18 +47,18 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-terminal px-6 py-5 mb-6 border border-black">
-          <h2 className="text-xs font-bold text-black tracking-widest">System Access</h2>
+          <h2 className="text-xs font-bold text-black tracking-widest">Log In</h2>
         </div>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 mb-4 text-xs tracking-wide">
+          <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 mb-4 text-xs tracking-wide normal-case">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Identifier</label>
+            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Email</label>
             <input
               type="email"
               value={email}
@@ -89,7 +70,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Access Key</label>
+            <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Password</label>
             <input
               type="password"
               value={password}
@@ -105,14 +86,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full bg-peach text-black py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-60 transition-colors"
           >
-            {loading ? 'Authenticating\u2026' : 'Authenticate'}
+            {loading ? 'Logging in\u2026' : 'Log In'}
           </button>
         </form>
 
         <p className="mt-6 text-center text-xs text-white/30 tracking-wide">
-          No account?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/signup" className="text-peach hover:text-peach-dark font-medium">
-            Register
+            Sign up
           </Link>
         </p>
       </div>

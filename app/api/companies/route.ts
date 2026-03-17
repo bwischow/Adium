@@ -22,15 +22,18 @@ export async function POST(request: Request) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await request.json()
-  const { name, industry_id } = body
+  const { name, industry_id, industry_other } = body
 
   if (!name || !industry_id) {
     return NextResponse.json({ error: 'name and industry_id are required' }, { status: 400 })
   }
 
+  const insert: Record<string, unknown> = { user_id: user.id, name, industry_id }
+  if (industry_other) insert.industry_other = industry_other
+
   const { data, error } = await supabase
     .from('companies')
-    .insert({ user_id: user.id, name, industry_id })
+    .insert(insert)
     .select('*, industry:industries(id, name, slug)')
     .single()
 

@@ -1,0 +1,46 @@
+# Adium — Benchmark Intelligence System
+
+> Adium is an ad performance benchmarking platform. Advertisers connect their Google Ads and Meta Ads accounts, and Adium benchmarks their campaigns against real, anonymized peers segmented by industry, spend tier, and platform.
+
+## What Adium Does
+
+- Benchmarks CPC, CPM, CTR, ROAS, CPA, and Cost Per Lead against industry peers
+- Segments benchmarks by industry, monthly ad spend tier, and advertising platform
+- Uses only read-only API access — cannot edit campaigns, budgets, or ads
+- All data is anonymized before entering the benchmark dataset
+- Benchmarks are recalculated nightly from live data
+
+## Who It's For
+
+- Growth marketers
+- Performance agencies
+- Startup founders running ads
+- Ecommerce operators
+- Marketing consultants
+
+## Supported Platforms
+
+- Google Ads
+- Meta Ads (Facebook & Instagram)
+- Additional platforms coming soon
+
+## How It Works
+
+1. Connect your Google Ads or Meta Ads account (read-only access)
+2. Your campaign data is anonymized and added to the peer pool
+3. Adium generates segmented benchmarks based on industry, spend, and platform
+4. You see exactly how your campaigns compare to similar advertisers
+
+## Key Details
+
+- Free to use, no credit card required
+- Read-only API access only
+- Individual account data is never visible to other advertisers
+- The more advertisers who participate, the better the benchmarks become
+
+## Links
+
+- Homepage: https://adium.io
+- Sign up: https://adium.io/signup
+- Privacy Policy: https://adium.io/privacy
+- Terms of Service: https://adium.io/terms

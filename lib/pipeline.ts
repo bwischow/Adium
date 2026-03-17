@@ -20,7 +20,7 @@ function getServiceClient() {
   )
 }
 
-const METRICS: MetricName[] = ['cpc', 'cpm', 'ctr', 'roas', 'cpa']
+const METRICS: MetricName[] = ['cpc', 'cpm', 'ctr', 'roas', 'cpa', 'cpl']
 
 // ---------------------------------------------------------------------------
 // Step 1 — Data pull
@@ -163,7 +163,7 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
   const { data: rows } = await supabase
     .from('daily_metrics')
     .select(`
-      impressions, clicks, spend, conversions, conversion_value,
+      impressions, clicks, spend, conversions, conversion_value, leads,
       ad_account:ad_accounts!inner(
         id, platform,
         company:companies!inner(industry_id),
@@ -180,7 +180,7 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
   // Build a flat list: { metric values, industry_id, platform, quartile }
   type FlatRow = {
     cpc: number | null; cpm: number | null; ctr: number | null
-    roas: number | null; cpa: number | null
+    roas: number | null; cpa: number | null; cpl: number | null
     industryId: number; platform: string; quartile: number | null
   }
 
@@ -196,6 +196,7 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
       ctr:  deriveMetric(r, 'ctr'),
       roas: deriveMetric(r, 'roas'),
       cpa:  deriveMetric(r, 'cpa'),
+      cpl:  deriveMetric(r, 'cpl'),
       industryId: company?.industry_id ?? 8,
       platform:   account.platform,
       quartile:   tier?.quartile ?? null,

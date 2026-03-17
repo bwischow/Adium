@@ -59,7 +59,7 @@ export async function GET(
   // --- User's daily metrics ---
   const { data: rawMetrics } = await supabase
     .from('daily_metrics')
-    .select('date, impressions, clicks, spend, conversions, conversion_value')
+    .select('date, impressions, clicks, spend, conversions, conversion_value, leads')
     .eq('ad_account_id', params.accountId)
     .gte('date', startDate)
     .lte('date', endDate)

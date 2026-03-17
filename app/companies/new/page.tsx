@@ -4,11 +4,14 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { INDUSTRIES } from '@/types'
 
+const OTHER_INDUSTRY_ID = 8
+
 export default function NewCompanyPage() {
-  const [name, setName]           = useState('')
-  const [industryId, setIndustryId] = useState('')
-  const [error, setError]         = useState('')
-  const [loading, setLoading]     = useState(false)
+  const [name, setName]                   = useState('')
+  const [industryId, setIndustryId]       = useState('')
+  const [industryOther, setIndustryOther] = useState('')
+  const [error, setError]                 = useState('')
+  const [loading, setLoading]             = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,10 +19,18 @@ export default function NewCompanyPage() {
     setError('')
     setLoading(true)
 
+    const payload: Record<string, unknown> = {
+      name,
+      industry_id: Number(industryId),
+    }
+    if (Number(industryId) === OTHER_INDUSTRY_ID && industryOther.trim()) {
+      payload.industry_other = industryOther.trim()
+    }
+
     const res = await fetch('/api/companies', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, industry_id: Number(industryId) }),
+      body: JSON.stringify(payload),
     })
 
     const json = await res.json()
@@ -39,8 +50,11 @@ export default function NewCompanyPage() {
           <h1 className="text-xs font-bold text-black tracking-widest">Initialize Company</h1>
         </div>
 
-        <p className="text-xs text-white/40 mb-6 tracking-wide">
+        <p className="text-xs text-white/40 mb-2 tracking-wide normal-case">
           A company represents a client or business whose ads you manage.
+        </p>
+        <p className="text-[10px] text-white/30 mb-6 tracking-wide normal-case">
+          You can always add more companies later from your dashboard.
         </p>
 
         {error && (
@@ -69,6 +83,7 @@ export default function NewCompanyPage() {
             <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">
               Industry
             </label>
+            <p className="text-[10px] text-white/30 mb-2 tracking-wide normal-case">If you are an agency, select the industry that best represents this client.</p>
             <select
               value={industryId}
               onChange={e => setIndustryId(e.target.value)}
@@ -76,19 +91,36 @@ export default function NewCompanyPage() {
               disabled={loading}
               className="w-full border border-white/20 bg-black px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach"
             >
-              <option value="">Select an industry\u2026</option>
+              <option value="">Select an industry…</option>
               {INDUSTRIES.map(ind => (
                 <option key={ind.id} value={ind.id}>{ind.name}</option>
               ))}
             </select>
           </div>
 
+          {Number(industryId) === OTHER_INDUSTRY_ID && (
+            <div>
+              <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">
+                Describe Your Industry
+              </label>
+              <input
+                type="text"
+                value={industryOther}
+                onChange={e => setIndustryOther(e.target.value)}
+                placeholder="e.g. Pet supplies, Agriculture, etc."
+                disabled={loading}
+                className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
+              />
+              <p className="text-[10px] text-white/30 mt-1 tracking-wide normal-case">This helps us add new industry categories in the future.</p>
+            </div>
+          )}
+
           <button
             type="submit"
             disabled={loading}
             className="w-full bg-peach text-black py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-60 transition-colors"
           >
-            {loading ? 'Creating\u2026' : 'Continue \u2192'}
+            {loading ? 'Creating…' : 'Continue →'}
           </button>
         </form>
       </div>

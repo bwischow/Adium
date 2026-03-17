@@ -3,7 +3,6 @@ import Link from 'next/link'
 export function LandingHero() {
   return (
     <section className="min-h-screen flex flex-col pt-16">
-      {/* Main hero card */}
       <div className="flex-1 flex flex-col lg:flex-row">
         {/* Left — headline + CTA */}
         <div className="flex-1 bg-peach border-b lg:border-b-0 lg:border-r border-black flex flex-col justify-center px-8 md:px-16 py-20 lg:py-24">
@@ -12,16 +11,20 @@ export function LandingHero() {
           </p>
 
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-black leading-[0.95] tracking-tight mb-8">
-            Find out how
+            Know if your
             <br />
-            good your ads
+            ads are
             <br />
-            actually are.
+            actually good.
           </h1>
 
-          <p className="text-sm md:text-base text-black/60 max-w-md mb-10 leading-relaxed">
-            Connect your ad accounts. Your data joins an anonymized peer pool.
-            In return, you get real performance benchmarks from advertisers like you.
+          <p className="text-sm md:text-base text-black/60 max-w-lg mb-4 leading-relaxed normal-case">
+            Benchmark your Google and Meta campaigns against real advertisers
+            with similar spend, industry, and goals.
+          </p>
+          <p className="text-sm md:text-base text-black/60 max-w-lg mb-10 leading-relaxed normal-case">
+            Adium shows you exactly how your CPC, CPA, conversion rate, and
+            ROAS compare to the market.
           </p>
 
           <div className="pb-4">
@@ -29,10 +32,10 @@ export function LandingHero() {
               href="/signup"
               className="inline-block bg-black text-peach text-sm font-bold tracking-widest px-8 py-4 hover:bg-black/80 transition-colors"
             >
-              Start benchmarking
+              Sign up for free
             </Link>
-            <p className="mt-4 text-xs text-black/40 tracking-wide">
-              Free to start. No credit card required.
+            <p className="mt-4 text-xs text-black/40 tracking-wide normal-case">
+              Read-only access. No credit card required.
             </p>
           </div>
         </div>
@@ -59,10 +62,11 @@ export function LandingHero() {
         </div>
       </div>
 
-      {/* Footer status strip */}
       <div className="bg-black border-t border-white/10 px-6 py-3 flex items-center justify-between">
         <span className="text-xs text-white/30 tracking-widest">ADIUM V1.0</span>
-        <span className="text-xs text-white/30 tracking-widest">BENCHMARK // INTELLIGENCE</span>
+        <span className="text-xs text-white/30 tracking-widest normal-case">
+          Connect your ad accounts and find out where you stack up in under 60 seconds.
+        </span>
         <span className="text-xs text-white/30 tracking-widest">
           {new Date().getFullYear()}
         </span>

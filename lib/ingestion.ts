@@ -47,6 +47,7 @@ export async function pullDailyMetrics(
     spend:            r.spend,
     conversions:      r.conversions,
     conversion_value: r.conversion_value,
+    leads:            r.leads,
     pulled_at:        new Date().toISOString(),
   }))
 
@@ -69,6 +70,7 @@ interface DailyRow {
   spend: number
   conversions: number
   conversion_value: number
+  leads: number
 }
 
 // ---------------------------------------------------------------------------
@@ -129,6 +131,7 @@ async function fetchGoogleAdsMetrics(
     spend:            Number(r.metrics.costMicros ?? 0) / 1_000_000,
     conversions:      Number(r.metrics.conversions ?? 0),
     conversion_value: Number(r.metrics.conversionsValue ?? 0),
+    leads:            0,  // Google Ads leads tracked via conversions
   }))
 }
 
@@ -208,6 +211,7 @@ export async function pullGoogleAdsForAccount(account: {
     spend:            Number(r.metrics.costMicros ?? 0) / 1_000_000,
     conversions:      Number(r.metrics.conversions ?? 0),
     conversion_value: Number(r.metrics.conversionsValue ?? 0),
+    leads:            0,  // Google Ads leads tracked via conversions
   }))
 
   if (rows.length === 0) return
@@ -224,6 +228,7 @@ export async function pullGoogleAdsForAccount(account: {
         spend:            r.spend,
         conversions:      r.conversions,
         conversion_value: r.conversion_value,
+        leads:            r.leads,
         pulled_at:        new Date().toISOString(),
       })),
       { onConflict: 'ad_account_id,date' }
@@ -299,6 +304,7 @@ async function fetchMetaMetrics(
     spend:            Number(item.spend ?? 0),
     conversions:      extractConversions(item.actions),
     conversion_value: extractConversionValue(item.action_values),
+    leads:            extractLeads(item.actions),
   }))
 }
 
@@ -340,6 +346,31 @@ function extractConversionValue(actionValues: any[] | undefined): number {
   let total = 0
   for (const action of actionValues) {
     if (purchaseTypes.includes(action.action_type)) {
+      total = Math.max(total, Number(action.value ?? 0))
+    }
+  }
+  return total
+}
+
+/**
+ * Extract lead form submissions from Meta actions array.
+ * Matches lead events across common action types:
+ *   - lead (standard)
+ *   - onsite_conversion.lead_grouped (on-platform lead forms)
+ *   - offsite_conversion.fb_pixel_lead (pixel-based)
+ *   - omni_lead (cross-channel)
+ */
+function extractLeads(actions: any[] | undefined): number {
+  if (!actions) return 0
+  const leadTypes = [
+    'lead',
+    'onsite_conversion.lead_grouped',
+    'offsite_conversion.fb_pixel_lead',
+    'omni_lead',
+  ]
+  let total = 0
+  for (const action of actions) {
+    if (leadTypes.includes(action.action_type)) {
       total = Math.max(total, Number(action.value ?? 0))
     }
   }

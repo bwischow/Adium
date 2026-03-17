@@ -6,12 +6,14 @@ interface RawRow {
   spend: number
   conversions: number
   conversion_value: number
+  leads?: number
 }
 
 /** Calculate a derived metric from a raw daily_metrics row. Returns null if
  *  the denominator is zero to avoid division-by-zero artifacts. */
 export function deriveMetric(row: RawRow, metric: MetricName): number | null {
   const { impressions, clicks, spend, conversions, conversion_value } = row
+  const leads = row.leads ?? 0
 
   switch (metric) {
     case 'cpc':
@@ -24,5 +26,7 @@ export function deriveMetric(row: RawRow, metric: MetricName): number | null {
       return spend > 0 ? conversion_value / spend : null
     case 'cpa':
       return conversions > 0 ? spend / conversions : null
+    case 'cpl':
+      return leads > 0 ? spend / leads : null
   }
 }

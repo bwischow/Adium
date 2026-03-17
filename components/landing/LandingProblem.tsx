@@ -11,34 +11,56 @@ export function LandingProblem() {
         {/* Right — content */}
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
           <h2 className="text-2xl md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-8">
-            Benchmark data today is essentially useless.
+            Most advertising benchmarks are useless.
           </h2>
 
-          <div className="space-y-6 text-sm text-white/50 leading-relaxed max-w-xl">
-            <p>
-              Average CPC by industry, published in January, no context on spend
-              level, conversion type, or even which year the data came from.
-              You&apos;re left guessing what &ldquo;good&rdquo; looks like.
-            </p>
-            <p>
-              Nobody segments by how much you spend, what you optimize for, or
-              what industry you&apos;re actually in. Generic averages don&apos;t
-              help anyone make real decisions.
-            </p>
+          <div className="space-y-4 text-sm text-white/50 leading-relaxed max-w-xl normal-case">
+            <p>Today&apos;s marketing benchmarks usually come from:</p>
+            <ul className="space-y-1 pl-4">
+              <li className="flex items-start gap-2">
+                <span className="text-white/20 mt-0.5">&#x2022;</span>
+                <span>Blog posts</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-white/20 mt-0.5">&#x2022;</span>
+                <span>Annual industry reports</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-white/20 mt-0.5">&#x2022;</span>
+                <span>Agency marketing studies</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="mt-8 space-y-4 text-sm text-white/50 leading-relaxed max-w-xl normal-case">
+            <p>They rarely account for:</p>
+            <ul className="space-y-1 pl-4">
+              <li className="flex items-start gap-2">
+                <span className="text-white/20 mt-0.5">&#x2022;</span>
+                <span>Your industry</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-white/20 mt-0.5">&#x2022;</span>
+                <span>Your budget</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-white/20 mt-0.5">&#x2022;</span>
+                <span>Your campaign objectives</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-white/20 mt-0.5">&#x2022;</span>
+                <span>Your platform mix</span>
+              </li>
+            </ul>
           </div>
 
           <div className="mt-10 border-l-2 border-peach pl-6">
-            <p className="text-sm text-white/40 italic leading-relaxed">
-              &ldquo;It doesn&apos;t help me to know a generic average CPC from
-              a blog with no qualification on spend or conversions.&rdquo;
+            <p className="text-lg md:text-xl font-bold text-white/70 leading-snug">
+              So marketers are left guessing:
+              <br />
+              <span className="text-peach">Are my ads actually performing well?</span>
             </p>
           </div>
-
-          <p className="mt-8 text-sm text-white/40 leading-relaxed">
-            What if there was a system where every advertiser contributed
-            anonymized data &mdash; and in return, got access to real benchmarks
-            from their actual peers?
-          </p>
         </div>
       </div>
     </section>

@@ -7,6 +7,8 @@ import type { Company, AdAccount } from '@/types'
 
 type Tab = 'profile' | 'accounts'
 
+const OTHER_INDUSTRY_ID = 8
+
 export default function CompanySettingsPage() {
   const { id: companyId } = useParams<{ id: string }>()
   const router = useRouter()
@@ -17,13 +19,14 @@ export default function CompanySettingsPage() {
   const [adAccounts, setAdAccounts] = useState<AdAccount[]>([])
 
   // Profile form state
-  const [name, setName]               = useState('')
-  const [industryId, setIndustryId]   = useState(1)
-  const [website, setWebsite]         = useState('')
-  const [phone, setPhone]             = useState('')
-  const [email, setEmail]             = useState('')
-  const [saving, setSaving]           = useState(false)
-  const [saveMessage, setSaveMessage] = useState('')
+  const [name, setName]                   = useState('')
+  const [industryId, setIndustryId]       = useState(1)
+  const [industryOther, setIndustryOther] = useState('')
+  const [website, setWebsite]             = useState('')
+  const [phone, setPhone]                 = useState('')
+  const [email, setEmail]                 = useState('')
+  const [saving, setSaving]               = useState(false)
+  const [saveMessage, setSaveMessage]     = useState('')
 
   // Account action state
   const [actionMenuId, setActionMenuId]     = useState<string | null>(null)
@@ -44,6 +47,7 @@ export default function CompanySettingsPage() {
       setAdAccounts(data.ad_accounts ?? [])
       setName(data.name || '')
       setIndustryId(data.industry_id || 1)
+      setIndustryOther(data.industry_other || '')
       setWebsite(data.website || '')
       setPhone(data.phone || '')
       setEmail(data.email || '')
@@ -61,7 +65,14 @@ export default function CompanySettingsPage() {
       const res = await fetch(`/api/companies/${companyId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, industry_id: industryId, website, phone, email }),
+        body: JSON.stringify({
+          name,
+          industry_id: industryId,
+          industry_other: industryId === OTHER_INDUSTRY_ID ? industryOther.trim() : null,
+          website,
+          phone,
+          email,
+        }),
       })
       if (res.ok) {
         setSaveMessage('Saved!')
@@ -134,52 +145,52 @@ export default function CompanySettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-sm text-gray-400">Loading...</p>
+      <div className="min-h-screen flex items-center justify-center bg-void">
+        <p className="text-sm text-white/40 tracking-widest">Loading...</p>
       </div>
     )
   }
 
   if (!company) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-sm text-red-500">Company not found.</p>
+      <div className="min-h-screen flex items-center justify-center bg-void">
+        <p className="text-sm text-red-400 tracking-widest">Company not found.</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-void">
       <div className="max-w-2xl mx-auto pt-10 px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Company Settings</h1>
+          <h1 className="text-sm font-bold tracking-widest text-white">Company Settings</h1>
           <button
             onClick={() => router.push(`/dashboard?company=${companyId}`)}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-xs text-white/40 hover:text-peach tracking-widest transition-colors"
           >
             &larr; Back to dashboard
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-8">
+        <div className="flex gap-0 border border-white/20 mb-8">
           <button
             onClick={() => setTab('profile')}
-            className={`flex-1 text-sm font-medium py-2.5 rounded-lg transition-colors ${
+            className={`flex-1 text-xs font-bold py-3 tracking-widest transition-colors ${
               tab === 'profile'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-peach text-black'
+                : 'text-white/40 hover:text-white'
             }`}
           >
             Profile
           </button>
           <button
             onClick={() => setTab('accounts')}
-            className={`flex-1 text-sm font-medium py-2.5 rounded-lg transition-colors ${
+            className={`flex-1 text-xs font-bold py-3 tracking-widest transition-colors border-l border-white/20 ${
               tab === 'accounts'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-peach text-black'
+                : 'text-white/40 hover:text-white'
             }`}
           >
             Connected Accounts
@@ -188,23 +199,24 @@ export default function CompanySettingsPage() {
 
         {/* Profile Tab */}
         {tab === 'profile' && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-5">
+          <div className="border border-white/20 p-6 space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company name</label>
+              <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Company Name</label>
               <input
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Industry</label>
+              <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Industry</label>
+              <p className="text-[10px] text-white/30 mb-2 tracking-wide normal-case">If you are an agency, select the industry that best represents this client.</p>
               <select
                 value={industryId}
                 onChange={e => setIndustryId(Number(e.target.value))}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-white/20 bg-black px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach"
               >
                 {INDUSTRIES.map(ind => (
                   <option key={ind.id} value={ind.id}>{ind.name}</option>
@@ -212,36 +224,50 @@ export default function CompanySettingsPage() {
               </select>
             </div>
 
+            {industryId === OTHER_INDUSTRY_ID && (
+              <div>
+                <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Describe Your Industry</label>
+                <input
+                  type="text"
+                  value={industryOther}
+                  onChange={e => setIndustryOther(e.target.value)}
+                  placeholder="e.g. Pet supplies, Agriculture, etc."
+                  className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
+                />
+                <p className="text-[10px] text-white/30 mt-1 tracking-wide normal-case">This helps us add new industry categories in the future.</p>
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Website</label>
+              <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Website</label>
               <input
                 type="url"
                 value={website}
                 onChange={e => setWebsite(e.target.value)}
                 placeholder="https://example.com"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Phone</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
                 placeholder="+1 (555) 123-4567"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="contact@company.com"
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
               />
             </div>
 
@@ -249,12 +275,12 @@ export default function CompanySettingsPage() {
               <button
                 onClick={handleSaveProfile}
                 disabled={saving || !name.trim()}
-                className="bg-blue-600 text-white rounded-xl px-6 py-2.5 font-semibold text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="bg-peach text-black px-6 py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {saving ? 'Saving...' : 'Save changes'}
+                {saving ? 'Saving...' : 'Save Changes'}
               </button>
               {saveMessage && (
-                <span className={`text-sm ${saveMessage === 'Saved!' ? 'text-green-600' : 'text-red-500'}`}>
+                <span className={`text-xs tracking-wide ${saveMessage === 'Saved!' ? 'text-terminal' : 'text-red-400'}`}>
                   {saveMessage}
                 </span>
               )}
@@ -264,13 +290,13 @@ export default function CompanySettingsPage() {
 
         {/* Connected Accounts Tab */}
         {tab === 'accounts' && (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+          <div className="border border-white/20 p-6">
             {adAccounts.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-sm text-gray-500 mb-4">No ad accounts connected yet.</p>
+                <p className="text-xs text-white/40 mb-4 tracking-widest">No ad accounts connected yet.</p>
                 <button
                   onClick={() => router.push(`/companies/${companyId}/connect`)}
-                  className="bg-blue-600 text-white rounded-xl px-5 py-2.5 font-semibold text-sm hover:bg-blue-700 transition-colors"
+                  className="bg-peach text-black px-5 py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark transition-colors"
                 >
                   Connect an account
                 </button>
@@ -280,22 +306,22 @@ export default function CompanySettingsPage() {
                 {adAccounts.map(account => (
                   <div
                     key={account.id}
-                    className={`flex items-center justify-between border rounded-xl px-4 py-3 ${
+                    className={`flex items-center justify-between border px-4 py-3 ${
                       account.is_active
-                        ? 'border-gray-200'
-                        : 'border-gray-100 bg-gray-50'
+                        ? 'border-white/20'
+                        : 'border-white/10 bg-white/5'
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-lg">{platformIcon(account.platform)}</span>
                       <div>
-                        <p className={`font-medium text-sm ${!account.is_active ? 'text-gray-400' : ''}`}>
+                        <p className={`font-medium text-sm ${!account.is_active ? 'text-white/40' : 'text-white'}`}>
                           {account.account_name || platformLabel(account.platform)}
                         </p>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs text-white/40">
                           {platformLabel(account.platform)}
                           {!account.is_active && (
-                            <span className="ml-2 text-orange-500 font-medium">Inactive</span>
+                            <span className="ml-2 text-orange-400 font-medium">Inactive</span>
                           )}
                         </p>
                       </div>
@@ -304,30 +330,30 @@ export default function CompanySettingsPage() {
                     <div className="relative">
                       <button
                         onClick={() => setActionMenuId(actionMenuId === account.id ? null : account.id)}
-                        className="text-gray-400 hover:text-gray-600 px-2 py-1 rounded-lg hover:bg-gray-100 transition-colors"
+                        className="text-white/40 hover:text-white px-2 py-1 hover:bg-white/10 transition-colors"
                       >
                         ⋯
                       </button>
 
                       {actionMenuId === account.id && (
-                        <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-xl shadow-lg py-1 w-52 z-10">
+                        <div className="absolute right-0 top-8 bg-black border border-white/20 shadow-lg py-1 w-52 z-10">
                           {account.is_active ? (
                             <button
                               onClick={() => { handleDeactivate(account.id); }}
                               disabled={actionLoading}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              className="w-full text-left px-4 py-2 text-sm text-white/70 hover:bg-white/10"
                             >
                               Deactivate
-                              <p className="text-xs text-gray-400">Stop pulling data, keep history</p>
+                              <p className="text-xs text-white/30">Stop pulling data, keep history</p>
                             </button>
                           ) : (
                             <button
                               onClick={() => { handleReactivate(account.id); }}
                               disabled={actionLoading}
-                              className="w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+                              className="w-full text-left px-4 py-2 text-sm text-terminal hover:bg-white/10"
                             >
                               Reactivate
-                              <p className="text-xs text-gray-400">Resume pulling data</p>
+                              <p className="text-xs text-white/30">Resume pulling data</p>
                             </button>
                           )}
                           <button
@@ -335,20 +361,20 @@ export default function CompanySettingsPage() {
                               setActionMenuId(null)
                               setConfirmAction({ accountId: account.id, action: 'disconnect', accountName: account.account_name || platformLabel(account.platform) })
                             }}
-                            className="w-full text-left px-4 py-2 text-sm text-orange-700 hover:bg-orange-50"
+                            className="w-full text-left px-4 py-2 text-sm text-orange-400 hover:bg-white/10"
                           >
                             Disconnect
-                            <p className="text-xs text-gray-400">Remove account link</p>
+                            <p className="text-xs text-white/30">Remove account link</p>
                           </button>
                           <button
                             onClick={() => {
                               setActionMenuId(null)
                               setConfirmAction({ accountId: account.id, action: 'delete_all', accountName: account.account_name || platformLabel(account.platform) })
                             }}
-                            className="w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                            className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-white/10"
                           >
                             Delete account &amp; data
-                            <p className="text-xs text-gray-400">Permanently remove everything</p>
+                            <p className="text-xs text-white/30">Permanently remove everything</p>
                           </button>
                         </div>
                       )}
@@ -358,7 +384,7 @@ export default function CompanySettingsPage() {
 
                 <button
                   onClick={() => router.push(`/companies/${companyId}/connect`)}
-                  className="mt-4 text-sm text-blue-600 hover:underline"
+                  className="mt-4 text-xs text-peach hover:text-peach-dark tracking-widest"
                 >
                   + Connect another account
                 </button>
@@ -370,15 +396,17 @@ export default function CompanySettingsPage() {
 
       {/* Confirmation Modal */}
       {confirmAction && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md mx-4">
-            <h2 className="text-lg font-bold mb-2">
-              {confirmAction.action === 'delete_all' ? 'Delete account & all data?' : 'Disconnect account?'}
-            </h2>
-            <p className="text-sm text-gray-500 mb-1">
-              <span className="font-medium text-gray-700">{confirmAction.accountName}</span>
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="border border-white/20 bg-void p-6 w-full max-w-md mx-4">
+            <div className="bg-red-900/30 border border-red-500/50 px-4 py-3 mb-4">
+              <h2 className="text-xs font-bold tracking-widest text-red-400">
+                {confirmAction.action === 'delete_all' ? 'Delete Account & All Data?' : 'Disconnect Account?'}
+              </h2>
+            </div>
+            <p className="text-sm text-white mb-1">
+              {confirmAction.accountName}
             </p>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-xs text-white/40 mb-6 tracking-wide normal-case">
               {confirmAction.action === 'delete_all'
                 ? 'This will permanently delete the ad account and all its historical metrics data. This cannot be undone.'
                 : 'This will remove the ad account connection. Historical metrics data will also be removed.'}
@@ -386,7 +414,7 @@ export default function CompanySettingsPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => setConfirmAction(null)}
-                className="flex-1 border border-gray-200 rounded-xl py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="flex-1 border border-white/20 py-2.5 text-xs font-bold tracking-widest text-white/70 hover:text-white hover:bg-white/5 transition-colors"
               >
                 Cancel
               </button>
@@ -399,13 +427,13 @@ export default function CompanySettingsPage() {
                   }
                 }}
                 disabled={actionLoading}
-                className={`flex-1 rounded-xl py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
+                className={`flex-1 py-2.5 text-xs font-bold tracking-widest text-black transition-colors disabled:opacity-50 ${
                   confirmAction.action === 'delete_all'
-                    ? 'bg-red-600 hover:bg-red-700'
-                    : 'bg-orange-600 hover:bg-orange-700'
+                    ? 'bg-red-500 hover:bg-red-600'
+                    : 'bg-orange-500 hover:bg-orange-600'
                 }`}
               >
-                {actionLoading ? 'Processing...' : confirmAction.action === 'delete_all' ? 'Delete everything' : 'Disconnect'}
+                {actionLoading ? 'Processing...' : confirmAction.action === 'delete_all' ? 'Delete Everything' : 'Disconnect'}
               </button>
             </div>
           </div>
