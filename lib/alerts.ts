@@ -99,7 +99,7 @@ export async function sendNotificationEmails(): Promise<void> {
 }
 
 async function processUserAlerts(
-  supabase: ReturnType<typeof createClient>,
+  supabase: ReturnType<typeof getServiceClient>,
   pref: { user_id: string; drift_alerts: MetricPrefs; benchmark_alerts: MetricPrefs },
   targetDate: string
 ) {

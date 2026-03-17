@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" fill="#0a0a0a"/>
+  <!-- Left leg of A -->
+  <polygon points="6,28 14,4 16.5,4 10,28" fill="#f4c6a5"/>
+  <!-- Right leg of A -->
+  <polygon points="26,28 18,4 15.5,4 22,28" fill="#f4c6a5"/>
+  <!-- Crossbar as line chart -->
+  <polyline
+    points="8,18 11,16 13.5,19 16,14 18.5,17 21,15 24,18"
+    fill="none"
+    stroke="#f4c6a5"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>
