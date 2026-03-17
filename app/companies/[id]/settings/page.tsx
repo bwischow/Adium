@@ -2,10 +2,14 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { INDUSTRIES } from '@/types'
-import type { Company, AdAccount } from '@/types'
+import { INDUSTRIES, METRIC_LABELS } from '@/types'
+import type { Company, AdAccount, MetricName } from '@/types'
 
-type Tab = 'profile' | 'accounts'
+type Tab = 'profile' | 'accounts' | 'notifications'
+
+type MetricPrefs = Record<MetricName, boolean>
+const ALL_METRICS: MetricName[] = ['cpc', 'cpm', 'ctr', 'roas', 'cpa', 'cpl']
+const DEFAULT_PREFS: MetricPrefs = { cpc: true, cpm: true, ctr: true, roas: true, cpa: true, cpl: true }
 
 const OTHER_INDUSTRY_ID = 8
 
@@ -27,6 +31,14 @@ export default function CompanySettingsPage() {
   const [email, setEmail]                 = useState('')
   const [saving, setSaving]               = useState(false)
   const [saveMessage, setSaveMessage]     = useState('')
+
+  // Notification preferences state
+  const [emailsEnabled, setEmailsEnabled]       = useState(true)
+  const [driftAlerts, setDriftAlerts]           = useState<MetricPrefs>({ ...DEFAULT_PREFS })
+  const [benchmarkAlerts, setBenchmarkAlerts]   = useState<MetricPrefs>({ ...DEFAULT_PREFS })
+  const [notifLoading, setNotifLoading]         = useState(false)
+  const [notifSaving, setNotifSaving]           = useState(false)
+  const [notifMessage, setNotifMessage]         = useState('')
 
   // Account action state
   const [actionMenuId, setActionMenuId]     = useState<string | null>(null)
@@ -55,6 +67,50 @@ export default function CompanySettingsPage() {
       // handle error
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchNotificationPrefs = async () => {
+    setNotifLoading(true)
+    try {
+      const res = await fetch('/api/notifications/preferences')
+      if (res.ok) {
+        const data = await res.json()
+        setEmailsEnabled(data.emails_enabled)
+        setDriftAlerts(data.drift_alerts)
+        setBenchmarkAlerts(data.benchmark_alerts)
+      }
+    } catch {
+      // use defaults
+    } finally {
+      setNotifLoading(false)
+    }
+  }
+
+  const handleSaveNotifications = async () => {
+    setNotifSaving(true)
+    setNotifMessage('')
+    try {
+      const res = await fetch('/api/notifications/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          emails_enabled: emailsEnabled,
+          drift_alerts: driftAlerts,
+          benchmark_alerts: benchmarkAlerts,
+        }),
+      })
+      if (res.ok) {
+        setNotifMessage('Saved!')
+        setTimeout(() => setNotifMessage(''), 3000)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setNotifMessage(data.error || 'Failed to save.')
+      }
+    } catch {
+      setNotifMessage('Network error.')
+    } finally {
+      setNotifSaving(false)
     }
   }
 
@@ -194,6 +250,16 @@ export default function CompanySettingsPage() {
             }`}
           >
             Connected Accounts
+          </button>
+          <button
+            onClick={() => { setTab('notifications'); fetchNotificationPrefs() }}
+            className={`flex-1 text-xs font-bold py-3 tracking-widest transition-colors border-l border-white/20 ${
+              tab === 'notifications'
+                ? 'bg-peach text-black'
+                : 'text-white/40 hover:text-white'
+            }`}
+          >
+            Notifications
           </button>
         </div>
 
@@ -389,6 +455,92 @@ export default function CompanySettingsPage() {
                   + Connect another account
                 </button>
               </div>
+            )}
+          </div>
+        )}
+        {/* Notifications Tab */}
+        {tab === 'notifications' && (
+          <div className="border border-white/20 p-6 space-y-6">
+            {notifLoading ? (
+              <p className="text-xs text-white/40 tracking-widest">Loading preferences...</p>
+            ) : (
+              <>
+                <p className="text-[10px] text-white/30 tracking-wide normal-case">
+                  These preferences apply to all your companies and ad accounts.
+                </p>
+
+                {/* Global toggle */}
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <div
+                    className={`relative w-10 h-5 rounded-full transition-colors ${emailsEnabled ? 'bg-peach' : 'bg-white/20'}`}
+                    onClick={() => setEmailsEnabled(!emailsEnabled)}
+                  >
+                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-black transition-transform ${emailsEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  </div>
+                  <span className="text-xs font-bold tracking-widest text-white">Email Notifications</span>
+                </label>
+
+                {emailsEnabled && (
+                  <>
+                    {/* Drift Alerts */}
+                    <div>
+                      <p className="text-xs font-bold tracking-widest text-white mb-1">Drift Alerts</p>
+                      <p className="text-[10px] text-white/30 tracking-wide normal-case mb-4">
+                        Get notified when a metric moves 20%+ outside your benchmark.
+                      </p>
+                      <div className="space-y-2">
+                        {ALL_METRICS.map(metric => (
+                          <label key={`drift-${metric}`} className="flex items-center justify-between py-2 px-3 border border-white/10 cursor-pointer hover:border-white/20 transition-colors">
+                            <span className="text-xs text-white/60 tracking-widest">{METRIC_LABELS[metric]}</span>
+                            <div
+                              className={`relative w-8 h-4 rounded-full transition-colors ${driftAlerts[metric] ? 'bg-peach' : 'bg-white/20'}`}
+                              onClick={() => setDriftAlerts(prev => ({ ...prev, [metric]: !prev[metric] }))}
+                            >
+                              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-black transition-transform ${driftAlerts[metric] ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Benchmark Alerts */}
+                    <div>
+                      <p className="text-xs font-bold tracking-widest text-white mb-1">New Benchmark Alerts</p>
+                      <p className="text-[10px] text-white/30 tracking-wide normal-case mb-4">
+                        Daily summary when fresh benchmark data is available.
+                      </p>
+                      <div className="space-y-2">
+                        {ALL_METRICS.map(metric => (
+                          <label key={`bench-${metric}`} className="flex items-center justify-between py-2 px-3 border border-white/10 cursor-pointer hover:border-white/20 transition-colors">
+                            <span className="text-xs text-white/60 tracking-widest">{METRIC_LABELS[metric]}</span>
+                            <div
+                              className={`relative w-8 h-4 rounded-full transition-colors ${benchmarkAlerts[metric] ? 'bg-peach' : 'bg-white/20'}`}
+                              onClick={() => setBenchmarkAlerts(prev => ({ ...prev, [metric]: !prev[metric] }))}
+                            >
+                              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-black transition-transform ${benchmarkAlerts[metric] ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    onClick={handleSaveNotifications}
+                    disabled={notifSaving}
+                    className="bg-peach text-black px-6 py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {notifSaving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  {notifMessage && (
+                    <span className={`text-xs tracking-wide ${notifMessage === 'Saved!' ? 'text-terminal' : 'text-red-400'}`}>
+                      {notifMessage}
+                    </span>
+                  )}
+                </div>
+              </>
             )}
           </div>
         )}

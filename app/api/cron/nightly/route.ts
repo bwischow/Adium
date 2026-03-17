@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { runDataPull, runSpendTierCalculation, runBenchmarkAggregation } from '@/lib/pipeline'
+import { sendNotificationEmails } from '@/lib/alerts'
 
 function getServiceClient() {
   return createClient(
@@ -46,6 +47,15 @@ export async function POST(request: Request) {
     log.push('Starting benchmark aggregation…')
     await runBenchmarkAggregation()
     log.push('Benchmark aggregation complete.')
+
+    log.push('Sending notification emails…')
+    try {
+      await sendNotificationEmails()
+      log.push('Notification emails complete.')
+    } catch (emailErr) {
+      console.error('[cron/nightly] Email notification step failed:', emailErr)
+      log.push(`Email notifications failed: ${(emailErr as Error).message}`)
+    }
 
     const duration = ((Date.now() - start) / 1000).toFixed(1)
     log.push(`Pipeline finished in ${duration}s`)

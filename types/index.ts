@@ -91,6 +91,12 @@ export interface DashboardData {
   isHistoricalFallback?: boolean
 }
 
+export interface NotificationPreferences {
+  emails_enabled: boolean
+  drift_alerts: Record<MetricName, boolean>
+  benchmark_alerts: Record<MetricName, boolean>
+}
+
 export const SPEND_TIER_LABELS: Record<SpendQuartile, string> = {
   1: 'Lower spend tier',
   2: 'Mid-low spend tier',
