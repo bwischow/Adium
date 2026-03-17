@@ -8,7 +8,7 @@ interface Props {
   onChange: (m: MetricName) => void
 }
 
-const METRICS: MetricName[] = ['ctr', 'cpc', 'cpm', 'roas', 'cpa']
+const METRICS: MetricName[] = ['ctr', 'cpc', 'cpm', 'roas', 'cpa', 'cpl']
 
 export default function MetricTabs({ selected, onChange }: Props) {
   return (

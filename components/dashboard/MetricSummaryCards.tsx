@@ -33,6 +33,7 @@ const CARD_METRICS: { key: MetricName; higherIsBetter: boolean }[] = [
   { key: 'cpc',  higherIsBetter: false },
   { key: 'cpm',  higherIsBetter: false },
   { key: 'cpa',  higherIsBetter: false },
+  { key: 'cpl',  higherIsBetter: false },
   { key: 'roas', higherIsBetter: true },
 ]
 
