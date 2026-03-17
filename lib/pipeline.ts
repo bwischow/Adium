@@ -21,6 +21,7 @@ function getServiceClient() {
 }
 
 const METRICS: MetricName[] = ['cpc', 'cpm', 'ctr', 'roas', 'cpa', 'cpl']
+const LOWER_IS_BETTER: MetricName[] = ['cpc', 'cpm', 'cpa', 'cpl']
 
 // ---------------------------------------------------------------------------
 // Step 1 — Data pull
@@ -239,6 +240,10 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
 
       if (values.length === 0) continue
 
+      // For cost metrics (lower is better), invert percentiles so that
+      // "90th percentile" = top 10% of performers = lowest costs.
+      const invert = LOWER_IS_BETTER.includes(metric)
+
       cacheRows.push({
         industry_id:    industryId,
         platform,
@@ -247,9 +252,9 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
         metric_name:    metric,
         avg_value:      mean(values),
         median_value:   percentile(values, 50),
-        p25_value:      percentile(values, 25),
-        p75_value:      percentile(values, 75),
-        p90_value:      percentile(values, 90),
+        p25_value:      percentile(values, invert ? 75 : 25),
+        p75_value:      percentile(values, invert ? 25 : 75),
+        p90_value:      percentile(values, invert ? 10 : 90),
         account_count:  values.length,
         calculated_at:  new Date().toISOString(),
       })

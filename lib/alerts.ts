@@ -62,10 +62,11 @@ function getPercentileRank(
   const lowerBetter = LOWER_IS_BETTER.includes(metric)
 
   if (lowerBetter) {
+    // p90 < p75 < p50 for cost metrics (lower = better performers)
+    if (userValue <= p90) return 'Top 10%'
+    if (userValue <= p75) return 'Top 25%'
     if (userValue <= p50) return 'Top 50%'
-    if (userValue <= p75) return 'P50–P75'
-    if (userValue <= p90) return 'P75–P90'
-    return 'Above P90'
+    return 'Below P50'
   } else {
     if (userValue >= p90) return 'Top 10%'
     if (userValue >= p75) return 'Top 25%'

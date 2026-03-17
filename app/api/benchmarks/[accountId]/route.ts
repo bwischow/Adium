@@ -15,6 +15,8 @@ import { deriveMetric } from '@/lib/metrics'
 import type { MetricName, DashboardData, Platform, SpendQuartile } from '@/types'
 import { SPEND_TIER_LABELS } from '@/types'
 
+const LOWER_IS_BETTER: MetricName[] = ['cpc', 'cpm', 'cpa', 'cpl']
+
 function percentileCalc(sorted: number[], p: number): number {
   const idx = Math.ceil((p / 100) * sorted.length) - 1
   return sorted[Math.max(0, idx)]
@@ -125,9 +127,10 @@ export async function GET(
       .sort((a, b) => a - b)
 
     if (historicalValues.length >= 3) {
+      const invert = LOWER_IS_BETTER.includes(metric)
       const p50 = percentileCalc(historicalValues, 50)
-      const p75 = percentileCalc(historicalValues, 75)
-      const p90 = percentileCalc(historicalValues, 90)
+      const p75 = percentileCalc(historicalValues, invert ? 25 : 75)
+      const p90 = percentileCalc(historicalValues, invert ? 10 : 90)
 
       // Return flat reference lines at historical percentile values
       finalBenchmarkSeries = userSeries.map(d => ({

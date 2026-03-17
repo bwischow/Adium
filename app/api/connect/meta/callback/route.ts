@@ -110,26 +110,39 @@ export async function GET(request: Request) {
   const accountsData = await accountsRes.json()
   const adAccounts: { id: string; name: string }[] = accountsData.data ?? []
 
-  // ── Step 3b: Fetch the user's Pages (pages_show_list) ───────────
+  // ── Step 3b: Log granted scopes on the user token ──────────────
+  const debugRes = await fetch(
+    `https://graph.facebook.com/v25.0/me?fields=id,name&access_token=${accessToken}`
+  )
+  const debugBody = debugRes.ok ? await debugRes.json() : null
+  console.log(`[meta/callback] User token /me response:`, JSON.stringify(debugBody))
+
+  // ── Step 3c: Fetch the user's Pages (pages_show_list) ─────────
   const pagesRes = await fetch(
     `https://graph.facebook.com/v25.0/me/accounts?fields=id,name,access_token&access_token=${accessToken}`
   )
   const pagesData = pagesRes.ok ? await pagesRes.json() : { data: [] }
   const pages: { id: string; name: string; access_token?: string }[] = pagesData.data ?? []
-  console.log(`[meta/callback] Found ${pages.length} Pages:`, pages.map(p => ({ id: p.id, name: p.name })))
+  console.log(`[meta/callback] /me/accounts response (${pagesRes.status}):`, JSON.stringify(pagesData, null, 2))
 
-  // ── Step 3c–3e: Exercise Page permissions ──────────────────────
+  // ── Step 3d–3f: Exercise Page permissions ─────────────────────
   if (pages.length > 0 && pages[0].access_token) {
     const pageId    = pages[0].id
     const pageToken = pages[0].access_token
 
-    // pages_read_engagement + read_insights — read Page-level insights
-    // Do NOT include since/until so Meta returns the most recent available data
-    const insightsUrl = `https://graph.facebook.com/v25.0/${pageId}/insights?metric=page_impressions&period=day&access_token=${pageToken}`
-    console.log(`[meta/callback] Calling Page Insights:`, insightsUrl.replace(pageToken, '<REDACTED>'))
-    const engageRes = await fetch(insightsUrl)
-    const engageBody = await engageRes.json()
-    console.log(`[meta/callback] pages_read_engagement response (${engageRes.status}):`, JSON.stringify(engageBody, null, 2))
+    // pages_read_engagement — read Page fields (fan_count, followers_count)
+    const pageFieldsRes = await fetch(
+      `https://graph.facebook.com/v25.0/${pageId}?fields=id,name,fan_count,followers_count,link&access_token=${pageToken}`
+    )
+    const pageFieldsBody = await pageFieldsRes.json()
+    console.log(`[meta/callback] pages_read_engagement — Page fields (${pageFieldsRes.status}):`, JSON.stringify(pageFieldsBody, null, 2))
+
+    // pages_read_engagement — read Page posts
+    const postsRes = await fetch(
+      `https://graph.facebook.com/v25.0/${pageId}/posts?fields=id,message,created_time,permalink_url&limit=5&access_token=${pageToken}`
+    )
+    const postsBody = await postsRes.json()
+    console.log(`[meta/callback] pages_read_engagement — Page posts (${postsRes.status}):`, JSON.stringify(postsBody, null, 2))
 
     // pages_manage_metadata — subscribe app to Page webhooks
     const metaRes = await fetch(
