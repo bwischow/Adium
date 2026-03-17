@@ -123,11 +123,13 @@ export async function GET(request: Request) {
     const pageId    = pages[0].id
     const pageToken = pages[0].access_token
 
-    // pages_read_engagement — read Page-level insights
-    const engageRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pageId}/insights?metric=page_views_total&period=day&limit=1&access_token=${pageToken}`
-    )
-    console.log(`[meta/callback] pages_read_engagement (${engageRes.status}):`, await engageRes.text())
+    // pages_read_engagement + read_insights — read Page-level insights
+    // Do NOT include since/until so Meta returns the most recent available data
+    const insightsUrl = `https://graph.facebook.com/v25.0/${pageId}/insights?metric=page_impressions&period=day&access_token=${pageToken}`
+    console.log(`[meta/callback] Calling Page Insights:`, insightsUrl.replace(pageToken, '<REDACTED>'))
+    const engageRes = await fetch(insightsUrl)
+    const engageBody = await engageRes.json()
+    console.log(`[meta/callback] pages_read_engagement response (${engageRes.status}):`, JSON.stringify(engageBody, null, 2))
 
     // pages_manage_metadata — subscribe app to Page webhooks
     const metaRes = await fetch(
