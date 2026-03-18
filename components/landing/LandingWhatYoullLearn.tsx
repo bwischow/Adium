@@ -11,7 +11,7 @@ export function LandingWhatYoullLearn() {
     <section className="border-b border-white/10">
       <div className="grid grid-cols-1 lg:grid-cols-3">
         <div className="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-white/10 px-8 md:px-12 py-12">
-          <p className="text-xs tracking-widest text-white/30 mb-2 font-medium">03</p>
+          <p className="text-xs tracking-widest text-white/40 mb-2 font-medium">03</p>
           <p className="text-xs tracking-widest text-white/50 font-medium">What You&apos;ll Learn</p>
         </div>
 
@@ -26,12 +26,12 @@ export function LandingWhatYoullLearn() {
                 <span className="text-peach text-xs font-bold tracking-widest mt-0.5">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <span className="text-sm text-white/60 leading-relaxed normal-case">{item}</span>
+                <span className="text-sm text-white/70 leading-relaxed normal-case">{item}</span>
               </li>
             ))}
           </ul>
 
-          <p className="mt-10 text-sm text-white/40 leading-relaxed normal-case">
+          <p className="mt-10 text-sm text-white/50 leading-relaxed normal-case">
             Instead of guessing, you&apos;ll know exactly where you stand.
           </p>
         </div>

@@ -2,7 +2,7 @@ export function LandingSocialProof() {
   return (
     <section className="border-b border-white/10">
       <div className="px-8 md:px-12 py-6 border-b border-white/10">
-        <p className="text-xs tracking-widest text-white/30 font-medium">
+        <p className="text-xs tracking-widest text-white/40 font-medium">
           Benchmarks powered by real ad accounts.
         </p>
       </div>
@@ -20,7 +20,7 @@ function StatCard({ value, label }: { value: string; label: string }) {
   return (
     <div className="px-8 md:px-10 py-10 flex flex-col">
       <p className="text-2xl md:text-3xl font-black text-peach tracking-tight mb-2">{value}</p>
-      <p className="text-xs text-white/40 tracking-wide normal-case">{label}</p>
+      <p className="text-xs text-white/50 tracking-wide normal-case">{label}</p>
     </div>
   )
 }

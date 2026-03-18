@@ -5,10 +5,10 @@ export function LandingFooter() {
     <footer className="bg-black border-t border-white/10">
       <div className="px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          <span className="text-xs text-white/30 tracking-widest">
+          <span className="text-xs text-white/40 tracking-widest">
             &copy; {new Date().getFullYear()} ADIUM
           </span>
-          <span className="text-xs text-white/20 tracking-wide normal-case">
+          <span className="text-xs text-white/30 tracking-wide normal-case">
             Google Ads and Meta Ads supported. Additional platforms coming soon.
           </span>
         </div>

@@ -2,7 +2,7 @@ export function LandingHowItWorks() {
   return (
     <section className="border-b border-white/10">
       <div className="px-8 md:px-12 py-6 border-b border-white/10">
-        <p className="text-xs tracking-widest text-white/30 font-medium">
+        <p className="text-xs tracking-widest text-white/40 font-medium">
           How It Works
         </p>
       </div>
@@ -21,7 +21,7 @@ export function LandingHowItWorks() {
       </div>
 
       <div className="px-8 md:px-12 py-6 border-t border-white/10">
-        <p className="text-xs text-white/30 tracking-wide normal-case">
+        <p className="text-xs text-white/40 tracking-wide normal-case">
           The more advertisers who participate, the better the benchmarks become.
         </p>
       </div>

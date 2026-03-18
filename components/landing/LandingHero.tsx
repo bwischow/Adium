@@ -18,11 +18,11 @@ export function LandingHero() {
             actually good.
           </h1>
 
-          <p className="text-sm md:text-base text-black/60 max-w-lg mb-4 leading-relaxed normal-case">
+          <p className="text-sm md:text-base text-black/70 max-w-lg mb-4 leading-relaxed normal-case">
             Benchmark your Google and Meta campaigns against real advertisers
             with similar spend, industry, and goals.
           </p>
-          <p className="text-sm md:text-base text-black/60 max-w-lg mb-10 leading-relaxed normal-case">
+          <p className="text-sm md:text-base text-black/70 max-w-lg mb-10 leading-relaxed normal-case">
             Adium shows you exactly how your CPC, CPA, conversion rate, and
             ROAS compare to the market.
           </p>
@@ -34,7 +34,7 @@ export function LandingHero() {
             >
               Sign up for free
             </Link>
-            <p className="mt-4 text-xs text-black/40 tracking-wide normal-case">
+            <p className="mt-4 text-xs text-black/50 tracking-wide normal-case">
               Read-only access. No credit card required.
             </p>
           </div>
@@ -63,11 +63,11 @@ export function LandingHero() {
       </div>
 
       <div className="bg-black border-t border-white/10 px-6 py-3 flex items-center justify-between">
-        <span className="text-xs text-white/30 tracking-widest">ADIUM V1.0</span>
-        <span className="text-xs text-white/30 tracking-widest normal-case">
+        <span className="text-xs text-white/40 tracking-widest">ADIUM V1.0</span>
+        <span className="text-xs text-white/40 tracking-widest normal-case">
           Connect your ad accounts and find out where you stack up in under 60 seconds.
         </span>
-        <span className="text-xs text-white/30 tracking-widest">
+        <span className="text-xs text-white/40 tracking-widest">
           {new Date().getFullYear()}
         </span>
       </div>

@@ -11,7 +11,7 @@ export function LandingAudience() {
     <section className="border-b border-white/10">
       <div className="grid grid-cols-1 lg:grid-cols-3">
         <div className="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-white/10 px-8 md:px-12 py-12">
-          <p className="text-xs tracking-widest text-white/30 mb-2 font-medium">07</p>
+          <p className="text-xs tracking-widest text-white/40 mb-2 font-medium">07</p>
           <p className="text-xs tracking-widest text-white/50 font-medium">Who It&apos;s For</p>
         </div>
 
@@ -24,12 +24,12 @@ export function LandingAudience() {
             {audiences.map((audience, i) => (
               <div key={i} className="flex items-center gap-3 border border-white/10 px-4 py-3">
                 <span className="w-1.5 h-1.5 bg-peach flex-shrink-0" />
-                <span className="text-sm text-white/60 normal-case">{audience}</span>
+                <span className="text-sm text-white/70 normal-case">{audience}</span>
               </div>
             ))}
           </div>
 
-          <p className="mt-8 text-sm text-white/40 leading-relaxed normal-case">
+          <p className="mt-8 text-sm text-white/50 leading-relaxed normal-case">
             If you spend money on ads, you should know how you compare.
           </p>
         </div>
