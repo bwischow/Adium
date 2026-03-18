@@ -22,7 +22,13 @@ export function LandingNav() {
         <Link href="/" className="text-sm font-bold tracking-widest text-white">
           ADIUM
         </Link>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 sm:gap-6">
+          <Link
+            href="/pricing"
+            className="hidden sm:inline text-xs tracking-widest text-white/60 hover:text-white transition-colors"
+          >
+            Pricing
+          </Link>
           <Link
             href="/login"
             className="text-xs tracking-widest text-white/60 hover:text-white transition-colors"
