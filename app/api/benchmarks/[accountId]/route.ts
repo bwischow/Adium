@@ -3,8 +3,8 @@
  * Query params: metric, start_date, end_date
  *
  * Returns two time series:
- *   userSeries  — user's own daily derived metric values
- *   benchmarkSeries — P50/P75/P90 from benchmark_cache for their segment
+ *   userSeries  - user's own daily derived metric values
+ *   benchmarkSeries - P50/P75/P90 from benchmark_cache for their segment
  *
  * When not enough peers exist, falls back to user's own historical percentiles.
  */

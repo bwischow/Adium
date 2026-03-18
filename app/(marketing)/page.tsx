@@ -13,11 +13,11 @@ import { LandingCTA } from '@/components/landing/LandingCTA'
 import { LandingFooter } from '@/components/landing/LandingFooter'
 
 export const metadata: Metadata = {
-  title: 'Adium — Know If Your Ads Are Actually Good',
+  title: 'Adium - Know If Your Ads Are Actually Good',
   description:
     'Benchmark your Google Ads and Meta Ads campaigns against real advertisers with similar spend, industry, and goals. Free, read-only, no credit card required.',
   openGraph: {
-    title: 'Adium — Know If Your Ads Are Actually Good',
+    title: 'Adium - Know If Your Ads Are Actually Good',
     description:
       'Benchmark your CPC, CPA, conversion rate, and ROAS against real advertisers like you.',
     type: 'website',

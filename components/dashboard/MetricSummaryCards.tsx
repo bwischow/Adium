@@ -76,7 +76,7 @@ export default function MetricSummaryCards({ current, previous, onMetricClick, s
               {METRIC_LABELS[key]}
             </p>
             <p className={`text-xl font-black ${isSelected ? 'text-black' : 'text-white'}`}>
-              {value != null ? fmt(value) : '\u2014'}
+              {value != null ? fmt(value) : '-'}
             </p>
             {change != null && (
               <div className={`flex items-center gap-1 mt-1 text-xs font-medium ${

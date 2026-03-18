@@ -13,13 +13,13 @@ const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://adium.io'
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: 'Adium — Ad Benchmarks from Real Advertisers',
-    template: '%s — Adium',
+    default: 'Adium - Ad Benchmarks from Real Advertisers',
+    template: '%s - Adium',
   },
   description:
     'Benchmark your Google Ads and Meta Ads performance against real, anonymized industry peers. Segmented by industry, spend tier, and platform.',
   openGraph: {
-    title: 'Adium — Ad Benchmarks from Real Advertisers',
+    title: 'Adium - Ad Benchmarks from Real Advertisers',
     description:
       'See how your CPC, CPA, CTR, and ROAS compare to advertisers with similar spend, industry, and goals.',
     type: 'website',
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Adium — Ad Benchmarks from Real Advertisers',
+    title: 'Adium - Ad Benchmarks from Real Advertisers',
     description:
       'See how your CPC, CPA, CTR, and ROAS compare to advertisers with similar spend, industry, and goals.',
   },

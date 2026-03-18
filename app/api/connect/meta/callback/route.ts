@@ -130,21 +130,21 @@ export async function GET(request: Request) {
     const pageId    = pages[0].id
     const pageToken = pages[0].access_token
 
-    // pages_read_engagement — read Page fields (fan_count, followers_count)
+    // pages_read_engagement - read Page fields (fan_count, followers_count)
     const pageFieldsRes = await fetch(
       `https://graph.facebook.com/v25.0/${pageId}?fields=id,name,fan_count,followers_count,link&access_token=${pageToken}`
     )
     const pageFieldsBody = await pageFieldsRes.json()
-    console.log(`[meta/callback] pages_read_engagement — Page fields (${pageFieldsRes.status}):`, JSON.stringify(pageFieldsBody, null, 2))
+    console.log(`[meta/callback] pages_read_engagement - Page fields (${pageFieldsRes.status}):`, JSON.stringify(pageFieldsBody, null, 2))
 
-    // pages_read_engagement — read Page posts
+    // pages_read_engagement - read Page posts
     const postsRes = await fetch(
       `https://graph.facebook.com/v25.0/${pageId}/posts?fields=id,message,created_time,permalink_url&limit=5&access_token=${pageToken}`
     )
     const postsBody = await postsRes.json()
-    console.log(`[meta/callback] pages_read_engagement — Page posts (${postsRes.status}):`, JSON.stringify(postsBody, null, 2))
+    console.log(`[meta/callback] pages_read_engagement - Page posts (${postsRes.status}):`, JSON.stringify(postsBody, null, 2))
 
-    // pages_manage_metadata — subscribe app to Page webhooks
+    // pages_manage_metadata - subscribe app to Page webhooks
     const metaRes = await fetch(
       `https://graph.facebook.com/v25.0/${pageId}/subscribed_apps`,
       {
@@ -158,13 +158,13 @@ export async function GET(request: Request) {
     )
     console.log(`[meta/callback] pages_manage_metadata (${metaRes.status}):`, await metaRes.text())
 
-    // pages_manage_ads — read ad posts for the Page
+    // pages_manage_ads - read ad posts for the Page
     const adsRes = await fetch(
       `https://graph.facebook.com/v25.0/${pageId}/ads_posts?fields=id,message&limit=1&access_token=${pageToken}`
     )
     console.log(`[meta/callback] pages_manage_ads (${adsRes.status}):`, await adsRes.text())
   } else {
-    console.log('[meta/callback] No Pages with access tokens — Page permission calls skipped')
+    console.log('[meta/callback] No Pages with access tokens - Page permission calls skipped')
   }
 
   if (adAccounts.length === 0) {

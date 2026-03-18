@@ -4,11 +4,11 @@ import { LandingNav } from '@/components/landing/LandingNav'
 import { LandingFooter } from '@/components/landing/LandingFooter'
 
 export const metadata: Metadata = {
-  title: 'Pricing — Adium',
+  title: 'Pricing - Adium',
   description:
     'Adium rewards early adopters with lifetime pricing. The first 50 users get free access forever. Join the ad benchmarking network.',
   openGraph: {
-    title: 'Pricing — Adium',
+    title: 'Pricing - Adium',
     description:
       'Early adopters lock in the lowest price forever. Connect your ad accounts and benchmark against real advertisers.',
     type: 'website',
@@ -50,7 +50,7 @@ function PricingHero() {
 
         <p className="text-base md:text-lg text-black/50 max-w-xl mx-auto leading-relaxed">
           Adium gets better with every user who joins. So we reward the people
-          who take an early bet on us with the best price — locked in for life.
+          who take an early bet on us with the best price, locked in for life.
         </p>
       </div>
     </section>
@@ -201,7 +201,7 @@ function PricingPhilosophy() {
               advertisers contribute their campaign performance.
             </p>
             <p>
-              People who join early take a bigger bet — the dataset is smaller,
+              People who join early take a bigger bet: the dataset is smaller,
               the benchmarks are less refined. They deserve the best price.
             </p>
             <p>
@@ -229,11 +229,11 @@ function PricingPhilosophy() {
 
 function PricingIncludes() {
   const items = [
-    'Full benchmark dashboard — CPC, CPA, CTR, ROAS, and more',
+    'Full benchmark dashboard: CPC, CPA, CTR, ROAS, and more',
     'Segmented comparisons by industry, spend tier, and platform',
     'Nightly benchmark updates as the dataset refreshes',
     'Google Ads and Meta Ads support',
-    'Read-only access — we never touch your campaigns',
+    'Read-only access. We never touch your campaigns',
   ]
 
   return (

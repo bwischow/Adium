@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — Adium',
+  title: 'Terms of Service - Adium',
   description: 'Terms and conditions for using the Adium ad benchmarking platform.',
 }
 

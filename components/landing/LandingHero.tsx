@@ -3,7 +3,7 @@ import Link from 'next/link'
 export function LandingHero() {
   return (
     <section className="min-h-screen flex flex-col pt-16">
-      {/* Hero — full-width centered */}
+      {/* Hero - full-width centered */}
       <div className="flex-1 bg-peach flex flex-col items-center justify-center px-8 md:px-16 py-20 lg:py-24 text-center">
         <p className="text-xs tracking-widest text-black/40 mb-8 font-medium uppercase">
           Ad Benchmarking for Real Advertisers
@@ -26,7 +26,7 @@ export function LandingHero() {
             href="/signup"
             className="inline-block bg-black text-peach text-sm font-bold tracking-widest px-10 py-4 hover:bg-black/80 transition-colors uppercase"
           >
-            Get Your Benchmarks — Free
+            Get Your Benchmarks - Free
           </Link>
           <p className="mt-4 text-xs text-black/35 tracking-wide">
             Read-only access · No credit card · 60-second setup
@@ -34,7 +34,7 @@ export function LandingHero() {
         </div>
       </div>
 
-      {/* Status bar — compact horizontal, replaces the old side panel */}
+      {/* Status bar - compact horizontal, replaces the old side panel */}
       <div className="bg-terminal border-t border-black">
         <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2 px-6 py-3">
           <StatusPill label="Data Pipeline" value="Active" />

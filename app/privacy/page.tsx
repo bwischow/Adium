@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Adium',
+  title: 'Privacy Policy - Adium',
   description: 'How Adium collects, uses, and protects your data.',
 }
 
@@ -149,10 +149,10 @@ export default function PrivacyPage() {
               privacy policies:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-1 leading-relaxed">
-              <li>Google Ads API &mdash; subject to Google&rsquo;s API Services User Data Policy</li>
-              <li>Meta Marketing API &mdash; subject to Meta&rsquo;s Platform Terms</li>
-              <li>Supabase &mdash; database and authentication provider</li>
-              <li>Vercel &mdash; hosting provider</li>
+              <li>Google Ads API - subject to Google&rsquo;s API Services User Data Policy</li>
+              <li>Meta Marketing API - subject to Meta&rsquo;s Platform Terms</li>
+              <li>Supabase - database and authentication provider</li>
+              <li>Vercel - hosting provider</li>
             </ul>
           </section>
 

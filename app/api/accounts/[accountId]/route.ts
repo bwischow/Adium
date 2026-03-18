@@ -43,7 +43,7 @@ export async function PUT(
  * Modes:
  *   - disconnect (default): Deletes the ad_account row. Historical daily_metrics
  *     rows are orphaned (their FK references are ON DELETE CASCADE, so they are
- *     also removed — see note below).
+ *     also removed - see note below).
  *   - delete_all: Same as disconnect. Because daily_metrics has
  *     ON DELETE CASCADE on ad_account_id, deleting the ad_account automatically
  *     removes all associated metrics.

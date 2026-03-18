@@ -93,7 +93,7 @@ export default function BenchmarkChart({
           />
           <Tooltip
             formatter={(value: number, name: string) => [
-              value != null ? fmt(value) : '\u2014',
+              value != null ? fmt(value) : '-',
               tooltipNames[name] ?? name,
             ]}
             labelFormatter={formatDate}

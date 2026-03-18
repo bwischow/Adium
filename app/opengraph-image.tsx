@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og'
 
 export const runtime = 'edge'
-export const alt = 'Adium — How Good Are Your Ads?'
+export const alt = 'Adium - How Good Are Your Ads?'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
@@ -13,7 +13,7 @@ export default async function Image() {
   const interBlack = await fetch(
     new URL('https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuBWYMZhrib2Bg-4.ttf')
   ).then((res) => res.arrayBuffer())
-  // "You" line — volatile, moving around
+  // "You" line - volatile, moving around
   const youLine = [
     { x: 0, y: 320 }, { x: 46, y: 305 }, { x: 92, y: 270 },
     { x: 138, y: 240 }, { x: 184, y: 280 }, { x: 230, y: 310 },
@@ -26,7 +26,7 @@ export default async function Image() {
     { x: 1104, y: 280 }, { x: 1150, y: 290 }, { x: 1200, y: 275 },
   ]
 
-  // Benchmark line — smoother, steadier trend
+  // Benchmark line - smoother, steadier trend
   const benchLine = [
     { x: 0, y: 340 }, { x: 46, y: 335 }, { x: 92, y: 328 },
     { x: 138, y: 322 }, { x: 184, y: 318 }, { x: 230, y: 315 },
@@ -59,7 +59,7 @@ export default async function Image() {
           overflow: 'hidden',
         }}
       >
-        {/* Chart layer — full bleed behind everything */}
+        {/* Chart layer - full bleed behind everything */}
         <svg
           width="1200"
           height="630"
@@ -71,25 +71,25 @@ export default async function Image() {
           <line x1="0" y1="310" x2="1200" y2="310" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
           <line x1="0" y1="380" x2="1200" y2="380" stroke="rgba(255,255,255,0.04)" strokeWidth="1" />
 
-          {/* Benchmark line — dashed, visible */}
+          {/* Benchmark line - dashed, visible */}
           <path d={benchPath} fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5" strokeDasharray="10,6" />
 
-          {/* You line — solid peach with glow */}
+          {/* You line - solid peach with glow */}
           <path d={youPath} fill="none" stroke="#f4c6a5" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" opacity="0.1" />
           <path d={youPath} fill="none" stroke="#f4c6a5" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
 
         {/* Content layer */}
         <div style={{ display: 'flex', flexDirection: 'column', position: 'relative', width: '100%', height: '100%', padding: '60px 72px' }}>
-          {/* ADIUM — large, top */}
+          {/* ADIUM - large, top */}
           <div style={{ display: 'flex', fontSize: '64px', fontWeight: 900, letterSpacing: '12px', color: '#ffffff' }}>
             ADIUM
           </div>
 
-          {/* Spacer — chart shows through here */}
+          {/* Spacer - chart shows through here */}
           <div style={{ flex: 1 }} />
 
-          {/* Tagline — large, bottom */}
+          {/* Tagline - large, bottom */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', fontSize: '42px', fontWeight: 900, color: '#ffffff', letterSpacing: '-1px', lineHeight: 1.1 }}>
               <span>How good are</span>

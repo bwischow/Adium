@@ -250,7 +250,7 @@ export default function DashboardClient({ companies }: Props) {
                 />
               )}
 
-              {/* Mobile benchmark summary — visible only on small screens */}
+              {/* Mobile benchmark summary - visible only on small screens */}
               <div className="sm:hidden mb-4 border border-white/10 p-4">
                 <p className="text-[10px] text-white/30 tracking-widest mb-2">
                   {data.isHistoricalFallback ? 'Your historical' : 'Benchmark'} comparison
@@ -261,7 +261,7 @@ export default function DashboardClient({ companies }: Props) {
                     <p className="text-lg font-black text-white">
                       {data.userSeries.length > 0 && data.userSeries[data.userSeries.length - 1].value != null
                         ? METRIC_FORMATS[selectedMetric](data.userSeries[data.userSeries.length - 1].value!)
-                        : '\u2014'}
+                        : '-'}
                     </p>
                   </div>
                   {data.benchmarkSeries.length > 0 && (
@@ -270,14 +270,14 @@ export default function DashboardClient({ companies }: Props) {
                       <p className="text-lg font-black text-white/50">
                         {data.benchmarkSeries[data.benchmarkSeries.length - 1]?.p50 != null
                           ? METRIC_FORMATS[selectedMetric](data.benchmarkSeries[data.benchmarkSeries.length - 1].p50!)
-                          : '\u2014'}
+                          : '-'}
                       </p>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Chart — hidden on mobile */}
+              {/* Chart - hidden on mobile */}
               <div className="hidden sm:block border border-white/10 p-6">
                 {data.spendTierLabel && (
                   <p className="text-xs text-white/30 mb-1 tracking-widest">
@@ -290,7 +290,7 @@ export default function DashboardClient({ companies }: Props) {
 
                 {!data.hasEnoughPeers && !data.isHistoricalFallback && (
                   <div className="mb-4 bg-peach/10 border border-peach/30 text-peach text-xs px-4 py-2 tracking-wide">
-                    Benchmark data coming soon &mdash; we need more accounts in your industry to show peer comparisons.
+                    Benchmark data coming soon - we need more accounts in your industry to show peer comparisons.
                   </div>
                 )}
 

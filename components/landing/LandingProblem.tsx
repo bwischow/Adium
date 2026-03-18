@@ -2,13 +2,13 @@ export function LandingProblem() {
   return (
     <section className="border-b border-white/10">
       <div className="grid grid-cols-1 lg:grid-cols-3">
-        {/* Left — section label */}
+        {/* Left - section label */}
         <div className="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-white/10 px-8 md:px-12 py-12">
           <p className="text-xs tracking-widest text-white/30 mb-2 font-medium uppercase">01</p>
           <p className="text-xs tracking-widest text-white/50 font-medium uppercase">The Problem</p>
         </div>
 
-        {/* Right — content */}
+        {/* Right - content */}
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
           <h2 className="text-2xl md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-8">
             Most advertising benchmarks are useless.

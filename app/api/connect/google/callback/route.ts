@@ -171,7 +171,7 @@ export async function GET(request: Request) {
         const nameData = await nameRes.json()
         const customer = nameData?.results?.[0]?.customer
 
-        // Skip MCC / manager accounts — users should pick ad-serving accounts
+        // Skip MCC / manager accounts - users should pick ad-serving accounts
         if (customer?.manager === true) {
           console.log(`[google/callback] Skipping manager account ${id}`)
           return
