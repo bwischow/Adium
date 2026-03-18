@@ -2,7 +2,7 @@ export function LandingHowItWorks() {
   return (
     <section className="border-b border-white/10">
       <div className="px-8 md:px-12 py-6 border-b border-white/10">
-        <p className="text-xs tracking-widest text-white/30 font-medium">
+        <p className="text-xs tracking-widest text-white/30 font-medium uppercase">
           How It Works
         </p>
       </div>
@@ -21,7 +21,7 @@ export function LandingHowItWorks() {
       </div>
 
       <div className="px-8 md:px-12 py-6 border-t border-white/10">
-        <p className="text-xs text-white/30 tracking-wide normal-case">
+        <p className="text-xs text-white/30 tracking-wide">
           The more advertisers who participate, the better the benchmarks become.
         </p>
       </div>
@@ -32,9 +32,9 @@ export function LandingHowItWorks() {
 function StepCard({ number, title, description, bg }: { number: string; title: string; description: string; bg: string }) {
   return (
     <div className={`${bg} px-8 md:px-8 py-10 flex flex-col`}>
-      <p className="text-xs tracking-widest text-black/30 mb-4 font-medium">{number}</p>
+      <p className="text-xs tracking-widest text-black/30 mb-4 font-medium uppercase">{number}</p>
       <h3 className="text-lg font-bold text-black mb-3 tracking-tight">{title}</h3>
-      <p className="text-sm text-black/60 leading-relaxed normal-case">{description}</p>
+      <p className="text-sm text-black/60 leading-relaxed">{description}</p>
     </div>
   )
 }

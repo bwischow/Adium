@@ -8,19 +8,14 @@
     letter-spacing: 0.03em;
   }
 
-  * {
+  /* Uppercase for structural UI elements. Body copy stays normal-case. */
+  h1, h2, h3, h4, h5, h6,
+  button,
+  label,
+  nav,
+  th,
+  .uppercase {
     text-transform: uppercase;
-  }
-
-  /* Preserve normal casing for text inputs */
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="search"],
-  input[type="url"],
-  input[type="tel"],
-  textarea {
-    text-transform: none;
   }
 }
 

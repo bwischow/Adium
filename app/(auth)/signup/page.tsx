@@ -61,11 +61,11 @@ export default function SignupPage() {
             <h2 className="text-xs font-bold text-black tracking-widest">Check Your Email</h2>
           </div>
 
-          <p className="text-sm text-white/60 mb-2 normal-case">
+          <p className="text-sm text-white/60 mb-2">
             We sent a confirmation link to:
           </p>
-          <p className="text-sm text-peach font-medium mb-6 normal-case">{email}</p>
-          <p className="text-xs text-white/40 mb-8 normal-case leading-relaxed">
+          <p className="text-sm text-peach font-medium mb-6">{email}</p>
+          <p className="text-xs text-white/40 mb-8 leading-relaxed">
             Click the link in the email to activate your account, then come back here to log in. If you don&apos;t see it, check your spam folder.
           </p>
 
@@ -93,7 +93,7 @@ export default function SignupPage() {
         </div>
 
         {error && (
-          <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 mb-4 text-xs tracking-wide normal-case">
+          <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 mb-4 text-xs tracking-wide">
             {error}
           </div>
         )}
@@ -152,7 +152,7 @@ export default function SignupPage() {
               placeholder="********"
             />
             {confirmPassword && confirmPassword !== password && (
-              <p className="text-[10px] text-red-400 mt-1 tracking-wide normal-case">Passwords do not match</p>
+              <p className="text-[10px] text-red-400 mt-1 tracking-wide">Passwords do not match</p>
             )}
           </div>
           <button

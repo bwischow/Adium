@@ -278,7 +278,7 @@ export default function CompanySettingsPage() {
 
             <div>
               <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Industry</label>
-              <p className="text-[10px] text-white/30 mb-2 tracking-wide normal-case">If you are an agency, select the industry that best represents this client.</p>
+              <p className="text-[10px] text-white/30 mb-2 tracking-wide">If you are an agency, select the industry that best represents this client.</p>
               <select
                 value={industryId}
                 onChange={e => setIndustryId(Number(e.target.value))}
@@ -300,7 +300,7 @@ export default function CompanySettingsPage() {
                   placeholder="e.g. Pet supplies, Agriculture, etc."
                   className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
                 />
-                <p className="text-[10px] text-white/30 mt-1 tracking-wide normal-case">This helps us add new industry categories in the future.</p>
+                <p className="text-[10px] text-white/30 mt-1 tracking-wide">This helps us add new industry categories in the future.</p>
               </div>
             )}
 
@@ -465,7 +465,7 @@ export default function CompanySettingsPage() {
               <p className="text-xs text-white/40 tracking-widest">Loading preferences...</p>
             ) : (
               <>
-                <p className="text-[10px] text-white/30 tracking-wide normal-case">
+                <p className="text-[10px] text-white/30 tracking-wide">
                   These preferences apply to all your companies and ad accounts.
                 </p>
 
@@ -485,7 +485,7 @@ export default function CompanySettingsPage() {
                     {/* Drift Alerts */}
                     <div>
                       <p className="text-xs font-bold tracking-widest text-white mb-1">Drift Alerts</p>
-                      <p className="text-[10px] text-white/30 tracking-wide normal-case mb-4">
+                      <p className="text-[10px] text-white/30 tracking-wide mb-4">
                         Get notified when a metric moves 20%+ outside your benchmark.
                       </p>
                       <div className="space-y-2">
@@ -506,7 +506,7 @@ export default function CompanySettingsPage() {
                     {/* Benchmark Alerts */}
                     <div>
                       <p className="text-xs font-bold tracking-widest text-white mb-1">New Benchmark Alerts</p>
-                      <p className="text-[10px] text-white/30 tracking-wide normal-case mb-4">
+                      <p className="text-[10px] text-white/30 tracking-wide mb-4">
                         Daily summary when fresh benchmark data is available.
                       </p>
                       <div className="space-y-2">
@@ -558,7 +558,7 @@ export default function CompanySettingsPage() {
             <p className="text-sm text-white mb-1">
               {confirmAction.accountName}
             </p>
-            <p className="text-xs text-white/40 mb-6 tracking-wide normal-case">
+            <p className="text-xs text-white/40 mb-6 tracking-wide">
               {confirmAction.action === 'delete_all'
                 ? 'This will permanently delete the ad account and all its historical metrics data. This cannot be undone.'
                 : 'This will remove the ad account connection. Historical metrics data will also be removed.'}

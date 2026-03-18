@@ -5,7 +5,7 @@ export function LandingCTA() {
     <section className="border-b border-white/10">
       <div className="bg-black px-8 md:px-16 py-24 md:py-32">
         <div className="max-w-2xl mx-auto text-center">
-          <p className="text-xs tracking-widest text-white/30 mb-6 font-medium">
+          <p className="text-xs tracking-widest text-white/30 mb-6 font-medium uppercase">
             Get Started
           </p>
 
@@ -15,20 +15,20 @@ export function LandingCTA() {
             your ads perform.
           </h2>
 
-          <p className="text-sm text-white/40 mb-4 max-w-md mx-auto leading-relaxed normal-case">
+          <p className="text-sm text-white/40 mb-4 max-w-md mx-auto leading-relaxed">
             See exactly how your campaigns compare to the market.
           </p>
-          <p className="text-sm text-white/40 mb-10 max-w-md mx-auto leading-relaxed normal-case">
+          <p className="text-sm text-white/40 mb-10 max-w-md mx-auto leading-relaxed">
             Connect your accounts and get benchmarks in under 60 seconds.
           </p>
 
           <Link
             href="/signup"
-            className="inline-block bg-peach text-black text-sm font-bold tracking-widest px-8 py-4 hover:bg-peach-dark transition-colors"
+            className="inline-block bg-peach text-black text-sm font-bold tracking-widest px-8 py-4 hover:bg-peach-dark transition-colors uppercase"
           >
             Get Your Benchmarks
           </Link>
-          <p className="mt-4 text-xs text-white/30 tracking-wide normal-case">
+          <p className="mt-4 text-xs text-white/30 tracking-wide">
             Read-only access. No credit card required.
           </p>
         </div>

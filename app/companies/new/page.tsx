@@ -50,10 +50,10 @@ export default function NewCompanyPage() {
           <h1 className="text-xs font-bold text-black tracking-widest">Initialize Company</h1>
         </div>
 
-        <p className="text-xs text-white/40 mb-2 tracking-wide normal-case">
+        <p className="text-xs text-white/40 mb-2 tracking-wide">
           A company represents a client or business whose ads you manage.
         </p>
-        <p className="text-[10px] text-white/30 mb-6 tracking-wide normal-case">
+        <p className="text-[10px] text-white/30 mb-6 tracking-wide">
           You can always add more companies later from your dashboard.
         </p>
 
@@ -83,7 +83,7 @@ export default function NewCompanyPage() {
             <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">
               Industry
             </label>
-            <p className="text-[10px] text-white/30 mb-2 tracking-wide normal-case">If you are an agency, select the industry that best represents this client.</p>
+            <p className="text-[10px] text-white/30 mb-2 tracking-wide">If you are an agency, select the industry that best represents this client.</p>
             <select
               value={industryId}
               onChange={e => setIndustryId(e.target.value)}
@@ -111,7 +111,7 @@ export default function NewCompanyPage() {
                 disabled={loading}
                 className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
               />
-              <p className="text-[10px] text-white/30 mt-1 tracking-wide normal-case">This helps us add new industry categories in the future.</p>
+              <p className="text-[10px] text-white/30 mt-1 tracking-wide">This helps us add new industry categories in the future.</p>
             </div>
           )}
 
