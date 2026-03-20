@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { LandingNav } from '@/components/landing/LandingNav'
 import { LandingHero } from '@/components/landing/LandingHero'
 import { LandingSocialProof } from '@/components/landing/LandingSocialProof'
+import { LandingProductShowcase } from '@/components/landing/LandingProductShowcase'
 import { LandingProblem } from '@/components/landing/LandingProblem'
 import { LandingSolution } from '@/components/landing/LandingSolution'
 import { LandingWhatYoullLearn } from '@/components/landing/LandingWhatYoullLearn'
@@ -30,6 +31,7 @@ export default function LandingPage() {
       <LandingNav />
       <LandingHero />
       <LandingSocialProof />
+      <LandingProductShowcase />
       <LandingProblem />
       <LandingSolution />
       <LandingWhatYoullLearn />

@@ -8,11 +8,11 @@ export function LandingNetwork() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-2xl md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-8">
+          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
             Benchmarks improve as the network grows.
           </h2>
 
-          <div className="space-y-4 text-sm text-white/50 leading-relaxed max-w-xl">
+          <div className="space-y-4 text-base md:text-lg text-white/50 leading-relaxed max-w-2xl">
             <p>Every connected advertiser strengthens the dataset.</p>
             <p>
               More advertisers &rarr; more segmentation &rarr; better benchmarks.
@@ -23,7 +23,7 @@ export function LandingNetwork() {
           </div>
 
           <div className="mt-10 border-l-2 border-terminal pl-6">
-            <p className="text-sm text-white/60 leading-relaxed italic">
+            <p className="text-base text-white/60 leading-relaxed italic">
               Think Glassdoor for ad performance.
             </p>
           </div>

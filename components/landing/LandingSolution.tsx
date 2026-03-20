@@ -10,11 +10,11 @@ export function LandingSolution() {
 
         {/* Right - content */}
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-2xl md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-8">
+          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
             Adium shows how your ads compare to real advertisers like you.
           </h2>
 
-          <div className="space-y-4 text-sm text-white/50 leading-relaxed max-w-xl">
+          <div className="space-y-4 text-base md:text-lg text-white/50 leading-relaxed max-w-2xl">
             <p>
               Instead of generic averages, Adium benchmarks your campaigns against
               advertisers with similar:
@@ -40,7 +40,7 @@ export function LandingSolution() {
           </div>
 
           <div className="mt-10 bg-white/5 border border-white/10 px-6 py-5">
-            <p className="text-sm text-white/60 leading-relaxed">
+            <p className="text-base text-white/60 leading-relaxed">
               A $5k/month SaaS advertiser shouldn&apos;t be compared to a $500k ecommerce brand.
               <br />
               <span className="text-white font-medium">Adium ensures you&apos;re comparing apples to apples.</span>

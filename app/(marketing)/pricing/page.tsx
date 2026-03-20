@@ -197,7 +197,7 @@ function PricingPhilosophy() {
 
           <div className="space-y-4 text-sm text-white/50 leading-relaxed max-w-xl">
             <p>
-              Adium is a data exchange. The benchmarks only exist because
+              Adium is a data community. The benchmarks only exist because
               advertisers contribute their campaign performance.
             </p>
             <p>
@@ -214,7 +214,7 @@ function PricingPhilosophy() {
             <p className="text-lg md:text-xl font-bold text-white/70 leading-snug">
               Think of it like equity.
               <br />
-              <span className="text-peach">The earlier you invest, the better your terms.</span>
+              <span className="text-peach">The earlier you invest, the better your price.</span>
             </p>
           </div>
         </div>
