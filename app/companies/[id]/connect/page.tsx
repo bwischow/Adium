@@ -8,7 +8,7 @@ interface AdAccount {
   name: string
 }
 
-type PlatformStep = 'google-select' | 'meta-select'
+type PlatformStep = 'google-select' | 'meta-select' | 'linkedin-select' | 'tiktok-select'
 
 const PLATFORM_CONFIG: Record<PlatformStep, { label: string; accountsUrl: string; selectUrl: string; noAccountsMsg: string }> = {
   'google-select': {
@@ -23,6 +23,18 @@ const PLATFORM_CONFIG: Record<PlatformStep, { label: string; accountsUrl: string
     selectUrl:      '/api/connect/meta/select',
     noAccountsMsg:  'No Meta Ads accounts found for this Meta account.',
   },
+  'linkedin-select': {
+    label:          'LinkedIn Ads',
+    accountsUrl:    '/api/connect/linkedin/accounts',
+    selectUrl:      '/api/connect/linkedin/select',
+    noAccountsMsg:  'No LinkedIn Ads accounts found for this LinkedIn account.',
+  },
+  'tiktok-select': {
+    label:          'TikTok Ads',
+    accountsUrl:    '/api/connect/tiktok/accounts',
+    selectUrl:      '/api/connect/tiktok/select',
+    noAccountsMsg:  'No TikTok Ads accounts found for this TikTok account.',
+  },
 }
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -32,6 +44,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   no_ad_accounts:           'All accounts associated with this login are manager (MCC) accounts. Please sign in with a Google account that directly owns ad-serving accounts.',
   session_storage_failed:   'An internal error occurred. Please try again.',
   long_lived_token_failed:  'Failed to obtain a long-lived token from Meta. Please try again.',
+  linkedin_scope_denied:    'LinkedIn did not grant the required advertising permissions. Ensure your app has Marketing Developer Platform access.',
+  tiktok_auth_failed:       'TikTok authentication failed. Please try again.',
 }
 
 export default function ConnectAccountPage() {
@@ -112,7 +126,7 @@ export default function ConnectAccountPage() {
     }
   }
 
-  const handleConnect = (platform: 'google' | 'meta') => {
+  const handleConnect = (platform: 'google' | 'meta' | 'linkedin' | 'tiktok') => {
     window.location.href = `/api/connect/${platform}/start?company_id=${companyId}`
   }
 
@@ -208,7 +222,7 @@ export default function ConnectAccountPage() {
         </div>
 
         <p className="text-xs text-white/40 mb-8 tracking-wide">
-          Connect a Google Ads or Meta Ads account to start benchmarking.
+          Connect an ad platform account to start benchmarking.
         </p>
 
         {isSuccess && (
@@ -244,7 +258,7 @@ export default function ConnectAccountPage() {
 
           <button
             onClick={() => handleConnect('meta')}
-            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/5 transition-colors"
+            className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/5 transition-colors border-b border-white/10"
           >
             <div className="w-8 h-8 bg-peach flex items-center justify-center">
               <span className="text-xs font-bold text-black">M</span>
@@ -255,6 +269,32 @@ export default function ConnectAccountPage() {
             </div>
             <span className="ml-auto text-xs text-white/20">&rarr;</span>
           </button>
+
+          <div
+            className="w-full flex items-center gap-4 px-5 py-4 border-b border-white/10 opacity-50 cursor-default"
+          >
+            <div className="w-8 h-8 bg-[#0A66C2] flex items-center justify-center">
+              <span className="text-xs font-bold text-white">Li</span>
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-white tracking-widest">LinkedIn Ads</p>
+              <p className="text-[10px] text-white/30 tracking-wide">Authorize read access</p>
+            </div>
+            <span className="ml-auto text-[10px] text-white/40 tracking-widest uppercase font-medium">Coming soon</span>
+          </div>
+
+          <div
+            className="w-full flex items-center gap-4 px-5 py-4 opacity-50 cursor-default"
+          >
+            <div className="w-8 h-8 bg-black flex items-center justify-center border border-white/20">
+              <span className="text-xs font-bold text-white">Tk</span>
+            </div>
+            <div className="text-left">
+              <p className="text-xs font-bold text-white tracking-widest">TikTok Ads</p>
+              <p className="text-[10px] text-white/30 tracking-wide">Authorize read access</p>
+            </div>
+            <span className="ml-auto text-[10px] text-white/40 tracking-widest uppercase font-medium">Coming soon</span>
+          </div>
         </div>
 
         <button

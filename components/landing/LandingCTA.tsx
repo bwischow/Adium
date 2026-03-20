@@ -15,10 +15,10 @@ export function LandingCTA() {
             your ads perform.
           </h2>
 
-          <p className="text-sm text-white/40 mb-4 max-w-md mx-auto leading-relaxed">
+          <p className="text-base text-white/40 mb-4 max-w-lg mx-auto leading-relaxed">
             See exactly how your campaigns compare to the market.
           </p>
-          <p className="text-sm text-white/40 mb-10 max-w-md mx-auto leading-relaxed">
+          <p className="text-base text-white/40 mb-10 max-w-lg mx-auto leading-relaxed">
             Connect your accounts and get benchmarks in under 60 seconds.
           </p>
 

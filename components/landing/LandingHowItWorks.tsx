@@ -8,8 +8,8 @@ export function LandingHowItWorks() {
       </div>
 
       <div className="px-8 md:px-12 py-8 border-b border-white/10">
-        <h2 className="text-2xl md:text-3xl font-black text-white leading-[1.05] tracking-tight">
-          Adium is a data exchange for advertising performance.
+        <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight">
+          Adium is a data community for advertising performance.
         </h2>
       </div>
 
@@ -33,8 +33,8 @@ function StepCard({ number, title, description, bg }: { number: string; title: s
   return (
     <div className={`${bg} px-8 md:px-8 py-10 flex flex-col`}>
       <p className="text-xs tracking-widest text-black/30 mb-4 font-medium uppercase">{number}</p>
-      <h3 className="text-lg font-bold text-black mb-3 tracking-tight">{title}</h3>
-      <p className="text-sm text-black/60 leading-relaxed">{description}</p>
+      <h3 className="text-xl font-bold text-black mb-3 tracking-tight">{title}</h3>
+      <p className="text-base text-black/60 leading-relaxed">{description}</p>
     </div>
   )
 }

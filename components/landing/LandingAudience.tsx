@@ -5,6 +5,8 @@ export function LandingAudience() {
     'Startup founders running ads',
     'Ecommerce operators',
     'Marketing consultants',
+    'First-time advertisers',
+    'Small business owners',
   ]
 
   return (
@@ -16,20 +18,20 @@ export function LandingAudience() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-2xl md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-8">
-            Built for teams running serious advertising.
+          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
+            Built for anyone spending money on ads.
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
             {audiences.map((audience, i) => (
               <div key={i} className="flex items-center gap-3 border border-white/10 px-4 py-3">
                 <span className="w-1.5 h-1.5 bg-peach flex-shrink-0" />
-                <span className="text-sm text-white/60">{audience}</span>
+                <span className="text-base text-white/60">{audience}</span>
               </div>
             ))}
           </div>
 
-          <p className="mt-8 text-sm text-white/40 leading-relaxed">
+          <p className="mt-8 text-base text-white/40 leading-relaxed">
             If you spend money on ads, you should know how you compare.
           </p>
         </div>

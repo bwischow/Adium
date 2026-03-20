@@ -16,22 +16,22 @@ export function LandingWhatYoullLearn() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-2xl md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-8">
+          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
             Within minutes you&apos;ll know:
           </h2>
 
-          <ul className="space-y-4 max-w-xl">
+          <ul className="space-y-4 max-w-2xl">
             {items.map((item, i) => (
               <li key={i} className="flex items-start gap-3">
-                <span className="text-peach text-xs font-bold tracking-widest mt-0.5">
+                <span className="text-peach text-xs font-bold tracking-widest mt-1">
                   {String(i + 1).padStart(2, '0')}
                 </span>
-                <span className="text-sm text-white/60 leading-relaxed">{item}</span>
+                <span className="text-base md:text-lg text-white/60 leading-relaxed">{item}</span>
               </li>
             ))}
           </ul>
 
-          <p className="mt-10 text-sm text-white/40 leading-relaxed">
+          <p className="mt-10 text-base text-white/40 leading-relaxed">
             Instead of guessing, you&apos;ll know exactly where you stand.
           </p>
         </div>

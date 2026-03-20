@@ -1,8 +1,8 @@
 export function LandingTrust() {
   const items = [
-    { label: 'We cannot edit campaigns', icon: '&#x2717;' },
-    { label: 'We cannot change budgets', icon: '&#x2717;' },
-    { label: 'We cannot launch ads', icon: '&#x2717;' },
+    { label: "We don't edit campaigns", icon: '&#x2717;' },
+    { label: "We don't change budgets", icon: '&#x2717;' },
+    { label: "We don't launch ads", icon: '&#x2717;' },
   ]
 
   return (
@@ -14,11 +14,11 @@ export function LandingTrust() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-2xl md:text-4xl font-black text-white leading-[1.05] tracking-tight mb-8">
+          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
             Your data stays private.
           </h2>
 
-          <p className="text-sm text-white/50 leading-relaxed max-w-xl mb-6">
+          <p className="text-base md:text-lg text-white/50 leading-relaxed max-w-2xl mb-6">
             Adium only uses read-only API access. That means:
           </p>
 
@@ -26,12 +26,12 @@ export function LandingTrust() {
             {items.map((item, i) => (
               <div key={i} className="flex items-center gap-3">
                 <span className="text-red-400 text-sm font-bold" dangerouslySetInnerHTML={{ __html: item.icon }} />
-                <span className="text-sm text-white/60">{item.label}</span>
+                <span className="text-base md:text-lg text-white/60">{item.label}</span>
               </div>
             ))}
           </div>
 
-          <div className="space-y-3 text-sm text-white/50 leading-relaxed max-w-xl">
+          <div className="space-y-3 text-base md:text-lg text-white/50 leading-relaxed max-w-2xl">
             <p>
               All benchmark data is fully anonymized before entering the dataset.
             </p>
