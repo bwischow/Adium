@@ -53,6 +53,14 @@ function parseSignedRequest(signedRequest: string, appSecret: string): DeletionP
   return decoded as DeletionPayload
 }
 
+export async function GET() {
+  return NextResponse.json({
+    status: 'active',
+    endpoint: 'Meta Data Deletion Callback',
+    method: 'POST',
+  })
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData()

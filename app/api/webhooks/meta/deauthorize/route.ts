@@ -43,6 +43,14 @@ function parseSignedRequest(signedRequest: string, appSecret: string): { user_id
   return decoded
 }
 
+export async function GET() {
+  return NextResponse.json({
+    status: 'active',
+    endpoint: 'Meta Deauthorize Callback',
+    method: 'POST',
+  })
+}
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData()
