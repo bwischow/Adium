@@ -18,7 +18,7 @@ export default function TermsPage() {
         </Link>
 
         <h1 className="text-3xl font-bold text-gray-900 mt-6 mb-2">Terms of Service</h1>
-        <p className="text-sm text-gray-400 mb-10">Last updated: March 13, 2026</p>
+        <p className="text-sm text-gray-400 mb-10">Last updated: March 24, 2026</p>
 
         <div className="space-y-8">
           <section>
@@ -32,10 +32,11 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Description of Service</h2>
             <p className="text-gray-600 leading-relaxed">
-              Adium is an ad benchmarking platform. You connect your Google Ads and/or Meta Ads
-              accounts, and we provide performance benchmarks comparing your metrics against
-              anonymized industry peers. The service pulls read-only performance data from your
-              connected ad accounts and displays it alongside aggregate benchmarks.
+              Adium is an ad benchmarking platform. You connect your Google Ads, Meta Ads,
+              LinkedIn Ads, and/or TikTok Ads accounts, and we provide performance benchmarks
+              comparing your metrics against anonymized industry peers. The service pulls read-only
+              performance data from your connected ad accounts and displays it alongside aggregate
+              benchmarks.
             </p>
           </section>
 
@@ -60,9 +61,9 @@ export default function TermsPage() {
             </h2>
             <ul className="list-disc pl-6 text-gray-600 space-y-2 leading-relaxed">
               <li>
-                By connecting a Google Ads or Meta Ads account, you represent that you have
-                authorization to grant Adium read-only access to that account&rsquo;s performance
-                data.
+                By connecting a Google Ads, Meta Ads, LinkedIn Ads, or TikTok Ads account, you
+                represent that you have authorization to grant Adium read-only access to that
+                account&rsquo;s performance data.
               </li>
               <li>
                 If you are an agency connecting client accounts, you represent that you have your
@@ -72,6 +73,34 @@ export default function TermsPage() {
               <li>
                 Adium accesses data in <strong>read-only mode</strong>. We do not modify your ad
                 campaigns, budgets, bids, or any other settings.
+              </li>
+              <li>
+                Your use of Adium is subject to the terms and policies of each connected ad
+                platform, including but not limited to: Meta Platform Terms, Google API Services
+                User Data Policy, LinkedIn API Terms of Use, and TikTok Developer Terms.
+              </li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">Data Processing</h2>
+            <ul className="list-disc pl-6 text-gray-600 space-y-2 leading-relaxed">
+              <li>
+                You retain ownership of your raw ad performance data. Adium processes this data
+                on your behalf to provide the benchmarking service.
+              </li>
+              <li>
+                Your ad performance data contributes to anonymized, aggregated benchmarks. By using
+                the service, you consent to this aggregation.
+              </li>
+              <li>
+                Adium retains the right to use aggregated, anonymized benchmark data that cannot
+                identify any individual account.
+              </li>
+              <li>
+                Data from each ad platform is used solely for the purpose of providing ad
+                performance benchmarks. We do not use platform data for advertising, profiling,
+                surveillance, or any purpose other than the benchmarking service described herein.
               </li>
             </ul>
           </section>
@@ -88,25 +117,6 @@ export default function TermsPage() {
               <li>Automate access to the service beyond normal browser usage</li>
               <li>
                 Share your account credentials or allow others to access your account
-              </li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">Data and Benchmarking</h2>
-            <ul className="list-disc pl-6 text-gray-600 space-y-2 leading-relaxed">
-              <li>
-                Your ad performance data contributes to anonymized, aggregated benchmarks. By using
-                the service, you consent to this aggregation.
-              </li>
-              <li>
-                Benchmarks are provided &ldquo;as-is&rdquo; and are based on data contributed by
-                other users. We do not guarantee their accuracy, completeness, or suitability for
-                any specific business decision.
-              </li>
-              <li>
-                You retain ownership of your raw ad performance data. Adium retains the right to
-                use aggregated, anonymized benchmark data.
               </li>
             </ul>
           </section>
@@ -154,7 +164,17 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Termination</h2>
             <ul className="list-disc pl-6 text-gray-600 space-y-1 leading-relaxed">
-              <li>You may close your account at any time by contacting us.</li>
+              <li>
+                You may close your account at any time by disconnecting all ad accounts and
+                contacting us at{' '}
+                <a
+                  href="mailto:legal@adium.com"
+                  className="text-brand-600 hover:text-brand-700 transition-colors"
+                >
+                  legal@adium.com
+                </a>
+                .
+              </li>
               <li>
                 We may terminate or suspend your account if you violate these terms.
               </li>
@@ -165,6 +185,13 @@ export default function TermsPage() {
                   className="text-brand-600 hover:text-brand-700 transition-colors"
                 >
                   Privacy Policy
+                </Link>
+                . You can also follow the steps on our{' '}
+                <Link
+                  href="/data-deletion"
+                  className="text-brand-600 hover:text-brand-700 transition-colors"
+                >
+                  Data Deletion page
                 </Link>
                 .
               </li>
@@ -190,6 +217,13 @@ export default function TermsPage() {
               >
                 legal@adium.com
               </a>
+              . For support inquiries, visit our{' '}
+              <Link
+                href="/support"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                Support page
+              </Link>
               .
             </p>
           </section>

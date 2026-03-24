@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     client_id:    process.env.META_APP_ID!,
     redirect_uri: process.env.META_REDIRECT_URI!,
     state,
-    scope:        'ads_read,ads_management,pages_read_engagement,pages_show_list,pages_manage_metadata,pages_manage_ads',
+    scope:        'ads_read',
   })
 
   return NextResponse.redirect(

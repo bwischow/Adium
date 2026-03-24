@@ -6,7 +6,7 @@
 
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { runDataPull, runSpendTierCalculation, runBenchmarkAggregation } from '@/lib/pipeline'
+import { runDataPull, runSpendTierCalculation, runBenchmarkAggregation, runRetentionCleanup } from '@/lib/pipeline'
 import { sendNotificationEmails } from '@/lib/alerts'
 
 function getServiceClient() {
@@ -47,6 +47,15 @@ export async function POST(request: Request) {
     log.push('Starting benchmark aggregation…')
     await runBenchmarkAggregation()
     log.push('Benchmark aggregation complete.')
+
+    log.push('Running data retention cleanup…')
+    try {
+      await runRetentionCleanup()
+      log.push('Retention cleanup complete.')
+    } catch (retentionErr) {
+      console.error('[cron/nightly] Retention cleanup failed:', retentionErr)
+      log.push(`Retention cleanup failed: ${(retentionErr as Error).message}`)
+    }
 
     log.push('Sending notification emails…')
     try {

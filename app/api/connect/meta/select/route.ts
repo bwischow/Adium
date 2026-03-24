@@ -25,6 +25,7 @@ interface PendingSession {
   expires_in:    number | null
   accounts:      { id: string; name: string }[]
   consumed_at:   string | null
+  meta_user_id:  string | null
 }
 
 export async function POST(request: Request) {
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
   // Fetch the pending session
   const { data: session, error: fetchError } = await supabase
     .from('pending_oauth_sessions')
-    .select('id, company_id, access_token, refresh_token, expires_in, accounts, consumed_at')
+    .select('id, company_id, access_token, refresh_token, expires_in, accounts, consumed_at, meta_user_id')
     .eq('id', sessionId)
     .single()
 
@@ -90,6 +91,7 @@ export async function POST(request: Request) {
           ? new Date(Date.now() + pending.expires_in * 1000).toISOString()
           : null,
         is_active:           true,
+        meta_user_id:        pending.meta_user_id,
       }, { onConflict: 'platform,platform_account_id' })
       .select()
       .single()
