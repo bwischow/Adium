@@ -208,6 +208,53 @@ export default function PrivacyPage() {
           </section>
 
           <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">
+              Law Enforcement and Government Data Requests
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-3">
+              We are committed to protecting the privacy of our users when responding to requests
+              from law enforcement agencies, government bodies, or other public authorities for
+              personal data or personal information. We have the following policies and processes
+              in place:
+            </p>
+            <ul className="list-disc pl-6 text-gray-600 space-y-2 leading-relaxed">
+              <li>
+                <strong>Legality review:</strong> All requests from public authorities for user data
+                are reviewed for legal validity and sufficiency before any information is disclosed.
+                We require that requests be made through proper legal channels and comply with
+                applicable laws.
+              </li>
+              <li>
+                <strong>Challenging unlawful requests:</strong> We will challenge or refuse requests
+                that we believe to be unlawful, overbroad, or otherwise inappropriate. This includes
+                requests that lack proper legal basis, fail to follow required procedures, or seek
+                data beyond the scope of legitimate authority.
+              </li>
+              <li>
+                <strong>Data minimization:</strong> When we are legally required to disclose user
+                data, we limit disclosure to the minimum information necessary to comply with the
+                specific request. We do not provide bulk or unrestricted access to user data.
+              </li>
+              <li>
+                <strong>Documentation:</strong> We maintain records of all requests received from
+                public authorities, including the nature of each request, our response, the legal
+                reasoning behind our decisions, and the actors involved.
+              </li>
+            </ul>
+            <p className="text-gray-600 leading-relaxed mt-3">
+              Where permitted by law, we will notify affected users of requests for their data. For
+              questions about our law enforcement request policies, contact{' '}
+              <a
+                href="mailto:legal@adium.com"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                legal@adium.com
+              </a>
+              .
+            </p>
+          </section>
+
+          <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Data Storage and Security</h2>
             <p className="text-gray-600 leading-relaxed">
               Your data is stored in Supabase (PostgreSQL) with row-level security policies. OAuth
