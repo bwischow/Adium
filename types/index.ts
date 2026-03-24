@@ -1,4 +1,11 @@
-export type Platform = 'google_ads' | 'meta'
+export type Platform = 'google_ads' | 'meta' | 'linkedin_ads' | 'tiktok_ads'
+
+export const PLATFORM_LABELS: Record<Platform, string> = {
+  google_ads: 'Google Ads',
+  meta: 'Meta Ads',
+  linkedin_ads: 'LinkedIn Ads',
+  tiktok_ads: 'TikTok Ads',
+}
 
 export type SpendQuartile = 1 | 2 | 3 | 4
 

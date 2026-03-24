@@ -8,8 +8,8 @@ import { subDays, format } from 'date-fns'
 import { deriveMetric } from './metrics'
 import { sendEmail } from './email'
 import { buildDriftAlertEmail, buildBenchmarkSummaryEmail } from './email-templates'
-import { METRIC_LABELS, METRIC_FORMATS } from '@/types'
-import type { MetricName } from '@/types'
+import { METRIC_LABELS, METRIC_FORMATS, PLATFORM_LABELS } from '@/types'
+import type { MetricName, Platform } from '@/types'
 
 function getServiceClient() {
   return createClient(
@@ -200,7 +200,7 @@ async function processUserAlerts(
         const { subject, html } = buildDriftAlertEmail({
           companyName: company.name,
           accountName: account.account_name,
-          platform: account.platform === 'google_ads' ? 'Google Ads' : 'Meta Ads',
+          platform: PLATFORM_LABELS[account.platform as Platform] ?? account.platform,
           drifts,
         })
         await sendEmail({ to: user.email, subject, html })
