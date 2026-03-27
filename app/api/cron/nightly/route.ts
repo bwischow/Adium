@@ -4,6 +4,8 @@
  * Protected by CRON_SECRET header check.
  */
 
+export const maxDuration = 300
+
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { runDataPull, runSpendTierCalculation, runBenchmarkAggregation, runRetentionCleanup } from '@/lib/pipeline'

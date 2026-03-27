@@ -22,6 +22,15 @@ function getServiceClient() {
 
 const METRICS: MetricName[] = ['cpc', 'cpm', 'ctr', 'roas', 'cpa', 'cpl']
 const LOWER_IS_BETTER: MetricName[] = ['cpc', 'cpm', 'cpa', 'cpl']
+const CONCURRENCY = 10
+
+/** Process items in parallel chunks of `size`. */
+async function inChunks<T>(items: T[], size: number, fn: (item: T) => Promise<void>): Promise<void> {
+  for (let i = 0; i < items.length; i += size) {
+    const chunk = items.slice(i, i + size)
+    await Promise.allSettled(chunk.map(fn))
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Step 1 — Data pull
@@ -37,7 +46,7 @@ export async function runDataPull(): Promise<void> {
 
   if (error) throw error
 
-  for (const account of accounts ?? []) {
+  await inChunks(accounts ?? [], CONCURRENCY, async (account) => {
     try {
       switch (account.platform) {
         case 'google_ads':
@@ -71,9 +80,8 @@ export async function runDataPull(): Promise<void> {
           .eq('id', account.id)
         console.warn(`[pipeline] Token expired for account ${account.id}, marked inactive`)
       }
-      // Continue with other accounts
     }
-  }
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -96,7 +104,7 @@ export async function runSpendTierCalculation(): Promise<void> {
 
   const spendMap: Map<string, { spend: number; industryId: number; platform: Platform }> = new Map()
 
-  for (const account of accounts) {
+  await inChunks(accounts, CONCURRENCY, async (account) => {
     const company = Array.isArray(account.company) ? account.company[0] : account.company
     const industryId: number = company?.industry_id ?? 8  // fallback: Other
 
@@ -113,7 +121,7 @@ export async function runSpendTierCalculation(): Promise<void> {
       industryId,
       platform:   account.platform as Platform,
     })
-  }
+  })
 
   // Group by industry × platform to compute quartile boundaries
   const groups = new Map<string, { id: string; spend: number }[]>()
