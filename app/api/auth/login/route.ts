@@ -3,6 +3,13 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
+  if (process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true') {
+    return NextResponse.json(
+      { error: 'Adium is not yet live. We will contact you when access is available.' },
+      { status: 403 }
+    )
+  }
+
   try {
     const { email, password } = await request.json()
 

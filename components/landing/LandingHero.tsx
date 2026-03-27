@@ -26,10 +26,10 @@ export function LandingHero() {
             href="/signup"
             className="inline-block bg-black text-peach text-sm font-bold tracking-widest px-10 py-4 hover:bg-black/80 transition-colors uppercase"
           >
-            Get Your Benchmarks - Free
+            Join The Waitlist - Free
           </Link>
           <p className="mt-4 text-xs text-black/35 tracking-wide">
-            Read-only access · No credit card · 60-second setup
+            Be the first to know when we launch.
           </p>
         </div>
       </div>

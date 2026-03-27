@@ -16,20 +16,20 @@ export function LandingCTA() {
           </h2>
 
           <p className="text-base text-white/40 mb-4 max-w-lg mx-auto leading-relaxed">
-            See exactly how your campaigns compare to the market.
+            We&apos;re launching soon. Sign up now to reserve your spot.
           </p>
           <p className="text-base text-white/40 mb-10 max-w-lg mx-auto leading-relaxed">
-            Connect your accounts and get benchmarks in under 60 seconds.
+            We&apos;ll notify you as soon as you can connect your accounts.
           </p>
 
           <Link
             href="/signup"
             className="inline-block bg-peach text-black text-sm font-bold tracking-widest px-8 py-4 hover:bg-peach-dark transition-colors uppercase"
           >
-            Get Your Benchmarks
+            Join The Waitlist
           </Link>
           <p className="mt-4 text-xs text-white/30 tracking-wide">
-            Read-only access. No credit card required.
+            Be the first to know when we launch.
           </p>
         </div>
       </div>

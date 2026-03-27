@@ -52,6 +52,25 @@ export async function middleware(request: NextRequest) {
   const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/companies')
   const isAuthPage = pathname.startsWith('/login') || pathname.startsWith('/signup')
 
+  // Waitlist mode: block dashboard/login, only allow signup for user collection
+  const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true'
+  if (isWaitlistMode) {
+    if (isProtected) {
+      const redirect = NextResponse.redirect(new URL('/', request.url))
+      supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
+        redirect.cookies.set(name, value)
+      )
+      return redirect
+    }
+    if (pathname.startsWith('/login')) {
+      const redirect = NextResponse.redirect(new URL('/signup', request.url))
+      supabaseResponse.cookies.getAll().forEach(({ name, value }) =>
+        redirect.cookies.set(name, value)
+      )
+      return redirect
+    }
+  }
+
   if (isProtected && !user) {
     const redirect = NextResponse.redirect(new URL('/login', request.url))
     supabaseResponse.cookies.getAll().forEach(({ name, value }) =>

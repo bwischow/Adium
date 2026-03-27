@@ -4,7 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code  = searchParams.get('code')
-  const next  = searchParams.get('next') ?? '/dashboard'
+  const isWaitlistMode = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true'
+  const defaultNext = isWaitlistMode ? '/' : '/dashboard'
+  const next  = searchParams.get('next') ?? defaultNext
 
   if (code) {
     const supabase = await createClient()

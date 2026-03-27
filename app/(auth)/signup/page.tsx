@@ -49,6 +49,43 @@ export default function SignupPage() {
   }
 
   if (success) {
+    const isWaitlist = process.env.NEXT_PUBLIC_WAITLIST_MODE === 'true'
+
+    if (isWaitlist) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-void">
+          <div className="border border-white/20 p-8 w-full max-w-md">
+            <div className="text-center mb-8">
+              <h1 className="text-sm font-bold tracking-widest text-white">ADIUM</h1>
+              <p className="text-xs text-white/30 mt-1 tracking-widest">Benchmark Intelligence System</p>
+            </div>
+
+            <div className="bg-terminal px-6 py-5 mb-6 border border-black">
+              <h2 className="text-xs font-bold text-black tracking-widest">YOU&apos;RE ON THE LIST</h2>
+            </div>
+
+            <p className="text-sm text-white/60 mb-2">
+              We registered your account with:
+            </p>
+            <p className="text-sm text-peach font-medium mb-6">{email}</p>
+            <p className="text-xs text-white/40 mb-4 leading-relaxed">
+              Adium is currently in the final stages of launch &mdash; we&apos;re just waiting on platform approval from Facebook and Google.
+            </p>
+            <p className="text-xs text-white/40 mb-8 leading-relaxed">
+              We&apos;ll send you an email as soon as the product is fully live and ready for you to connect your ad accounts.
+            </p>
+
+            <Link
+              href="/"
+              className="block w-full bg-peach text-black py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark transition-colors text-center"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-void">
         <div className="border border-white/20 p-8 w-full max-w-md">
