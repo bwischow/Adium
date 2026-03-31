@@ -1,3 +1,5 @@
+import { AnimatedHeading } from './AnimatedHeading'
+
 export function LandingNetwork() {
   return (
     <section className="border-b border-white/10">
@@ -8,9 +10,13 @@ export function LandingNetwork() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
-            Benchmarks improve as the network grows.
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            animateOnScroll
+            balance
+            text="Benchmarks improve as the network grows."
+            className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8"
+          />
 
           <div className="space-y-4 text-base md:text-lg text-white/50 leading-relaxed max-w-2xl">
             <p>Every connected advertiser strengthens the dataset.</p>

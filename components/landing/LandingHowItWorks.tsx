@@ -1,3 +1,5 @@
+import { AnimatedHeading } from './AnimatedHeading'
+
 export function LandingHowItWorks() {
   return (
     <section className="border-b border-white/10">
@@ -8,9 +10,13 @@ export function LandingHowItWorks() {
       </div>
 
       <div className="px-8 md:px-12 py-8 border-b border-white/10">
-        <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight">
-          Adium is a data community for advertising performance.
-        </h2>
+        <AnimatedHeading
+          as="h2"
+          animateOnScroll
+          balance
+          text="Adium is a data community for advertising performance."
+          className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight"
+        />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-white/10">

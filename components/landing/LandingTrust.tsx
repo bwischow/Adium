@@ -1,3 +1,5 @@
+import { AnimatedHeading } from './AnimatedHeading'
+
 export function LandingTrust() {
   const items = [
     { label: "We don't edit campaigns", icon: '&#x2717;' },
@@ -14,9 +16,13 @@ export function LandingTrust() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
-            Your data stays private.
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            animateOnScroll
+            balance
+            text="Your data stays private."
+            className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8"
+          />
 
           <p className="text-base md:text-lg text-white/50 leading-relaxed max-w-2xl mb-6">
             Adium only uses read-only API access. That means:

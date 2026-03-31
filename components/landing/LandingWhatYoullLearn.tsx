@@ -1,3 +1,5 @@
+import { AnimatedHeading } from './AnimatedHeading'
+
 export function LandingWhatYoullLearn() {
   const items = [
     'Whether your CPC is above or below market',
@@ -16,9 +18,13 @@ export function LandingWhatYoullLearn() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
-            Within minutes you&apos;ll know:
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            animateOnScroll
+            balance
+            text="Within minutes you'll know:"
+            className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8"
+          />
 
           <ul className="space-y-4 max-w-2xl">
             {items.map((item, i) => (

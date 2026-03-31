@@ -1,3 +1,5 @@
+import { AnimatedHeading } from './AnimatedHeading'
+
 export function LandingProductShowcase() {
   return (
     <section className="border-b border-white/10">
@@ -8,9 +10,13 @@ export function LandingProductShowcase() {
       </div>
 
       <div className="px-8 md:px-12 py-8 border-b border-white/10">
-        <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight">
-          See exactly where you stand.
-        </h2>
+        <AnimatedHeading
+          as="h2"
+          animateOnScroll
+          balance
+          text="See exactly where you stand."
+          className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight"
+        />
       </div>
 
       <div className="px-4 md:px-12 py-12 md:py-16">

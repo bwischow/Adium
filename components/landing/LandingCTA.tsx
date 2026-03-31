@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AnimatedHeading } from './AnimatedHeading'
 
 export function LandingCTA() {
   return (
@@ -9,11 +10,13 @@ export function LandingCTA() {
             Get Started
           </p>
 
-          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-6">
-            Stop guessing how
-            <br />
-            your ads perform.
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            animateOnScroll
+            balance
+            text="Stop guessing how your ads perform."
+            className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-6"
+          />
 
           <p className="text-base text-white/40 mb-4 max-w-lg mx-auto leading-relaxed">
             See exactly how your campaigns compare to the market.

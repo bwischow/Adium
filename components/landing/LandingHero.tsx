@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { AnimatedHeading } from './AnimatedHeading'
+import { KineticHero } from './KineticHero'
 
 export function LandingHero() {
   return (
@@ -10,7 +10,7 @@ export function LandingHero() {
           Ad Benchmarking for Real Advertisers
         </p>
 
-        <AnimatedHeading
+        <KineticHero
           text="Know if your ads are actually good."
           className="text-4xl md:text-6xl lg:text-7xl font-black text-black leading-[0.95] tracking-tight mb-8 max-w-3xl"
         />

@@ -1,3 +1,5 @@
+import { AnimatedHeading } from './AnimatedHeading'
+
 export function LandingProblem() {
   return (
     <section className="border-b border-white/10">
@@ -10,9 +12,13 @@ export function LandingProblem() {
 
         {/* Right - content */}
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
-            Most advertising benchmarks are useless.
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            animateOnScroll
+            balance
+            text="Most advertising benchmarks are useless."
+            className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8"
+          />
 
           <div className="space-y-4 text-base md:text-lg text-white/50 leading-relaxed max-w-2xl">
             <p>Today&apos;s marketing benchmarks usually come from:</p>

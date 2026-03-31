@@ -1,3 +1,5 @@
+import { AnimatedHeading } from './AnimatedHeading'
+
 export function LandingAudience() {
   const audiences = [
     'Growth marketers',
@@ -18,9 +20,13 @@ export function LandingAudience() {
         </div>
 
         <div className="lg:col-span-2 px-8 md:px-12 py-12">
-          <h2 className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8">
-            Built for anyone spending money on ads.
-          </h2>
+          <AnimatedHeading
+            as="h2"
+            animateOnScroll
+            balance
+            text="Built for anyone spending money on ads."
+            className="text-3xl md:text-5xl font-black text-white leading-[1.05] tracking-tight mb-8"
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg">
             {audiences.map((audience, i) => (
