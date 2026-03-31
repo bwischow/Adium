@@ -29,10 +29,15 @@ const config: Config = {
       },
       animation: {
         blink: 'blink 1s infinite',
+        'line-reveal': 'lineReveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards',
       },
       keyframes: {
         blink: {
           '50%': { opacity: '0.2' },
+        },
+        lineReveal: {
+          '0%': { transform: 'translateY(100%)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
     },

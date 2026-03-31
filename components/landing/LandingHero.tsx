@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AnimatedHeading } from './AnimatedHeading'
 
 export function LandingHero() {
   return (
@@ -9,11 +10,10 @@ export function LandingHero() {
           Ad Benchmarking for Real Advertisers
         </p>
 
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-black leading-[0.95] tracking-tight mb-8 max-w-3xl">
-          Know if your ads
-          <br />
-          are actually good.
-        </h1>
+        <AnimatedHeading
+          text="Know if your ads are actually good."
+          className="text-4xl md:text-6xl lg:text-7xl font-black text-black leading-[0.95] tracking-tight mb-8 max-w-3xl"
+        />
 
         <p className="text-base md:text-lg text-black/50 max-w-xl mb-10 leading-relaxed">
           Connect your Google or Meta Ads account and instantly see how your CPC,
