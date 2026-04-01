@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
+import { WaitlistCTAButton } from './WaitlistCTAButton'
 
-export function LandingNav() {
+export function LandingNav({ waitlist = false }: { waitlist?: boolean }) {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -38,22 +39,34 @@ export function LandingNav() {
           >
             Log in
           </Link>
-          <Link
-            href="/signup"
-            className="text-xs tracking-widest bg-peach text-black px-5 py-2 hover:bg-peach-dark transition-colors font-medium"
-          >
-            Get started
-          </Link>
+          {waitlist ? (
+            <WaitlistCTAButton className="text-xs tracking-widest bg-peach text-black px-5 py-2 hover:bg-peach-dark transition-colors font-medium">
+              Join Waitlist
+            </WaitlistCTAButton>
+          ) : (
+            <Link
+              href="/signup"
+              className="text-xs tracking-widest bg-peach text-black px-5 py-2 hover:bg-peach-dark transition-colors font-medium"
+            >
+              Get started
+            </Link>
+          )}
         </div>
 
         {/* Mobile: CTA + hamburger */}
         <div className="flex sm:hidden items-center gap-3">
-          <Link
-            href="/signup"
-            className="text-xs tracking-widest bg-peach text-black px-5 py-2 hover:bg-peach-dark transition-colors font-medium"
-          >
-            Get started
-          </Link>
+          {waitlist ? (
+            <WaitlistCTAButton className="text-xs tracking-widest bg-peach text-black px-5 py-2 hover:bg-peach-dark transition-colors font-medium">
+              Join Waitlist
+            </WaitlistCTAButton>
+          ) : (
+            <Link
+              href="/signup"
+              className="text-xs tracking-widest bg-peach text-black px-5 py-2 hover:bg-peach-dark transition-colors font-medium"
+            >
+              Get started
+            </Link>
+          )}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             className="text-white/60 hover:text-white transition-colors p-1"

@@ -1,6 +1,7 @@
 import Link from 'next/link'
+import { WaitlistCTAButton } from './WaitlistCTAButton'
 
-export function LandingCTA() {
+export function LandingCTA({ waitlist = false }: { waitlist?: boolean }) {
   return (
     <section className="border-b border-white/10">
       <div className="bg-black px-8 md:px-16 py-24 md:py-32">
@@ -19,17 +20,27 @@ export function LandingCTA() {
             See exactly how your campaigns compare to the market.
           </p>
           <p className="text-base text-white/40 mb-10 max-w-lg mx-auto leading-relaxed">
-            Connect your accounts and get benchmarks in under 60 seconds.
+            {waitlist
+              ? 'Join the waitlist to be first in line.'
+              : 'Connect your accounts and get benchmarks in under 60 seconds.'}
           </p>
 
-          <Link
-            href="/signup"
-            className="inline-block bg-peach text-black text-sm font-bold tracking-widest px-8 py-4 hover:bg-peach-dark transition-colors uppercase"
-          >
-            Get Your Benchmarks
-          </Link>
+          {waitlist ? (
+            <WaitlistCTAButton className="inline-block bg-peach text-black text-sm font-bold tracking-widest px-8 py-4 hover:bg-peach-dark transition-colors uppercase">
+              Join the Waitlist
+            </WaitlistCTAButton>
+          ) : (
+            <Link
+              href="/signup"
+              className="inline-block bg-peach text-black text-sm font-bold tracking-widest px-8 py-4 hover:bg-peach-dark transition-colors uppercase"
+            >
+              Get Your Benchmarks
+            </Link>
+          )}
           <p className="mt-4 text-xs text-white/30 tracking-wide">
-            Read-only access. No credit card required.
+            {waitlist
+              ? 'Be the first to know when we launch.'
+              : 'Read-only access. No credit card required.'}
           </p>
         </div>
       </div>

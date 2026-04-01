@@ -1,6 +1,7 @@
 import Link from 'next/link'
+import { WaitlistCTAButton } from './WaitlistCTAButton'
 
-export function LandingHero() {
+export function LandingHero({ waitlist = false }: { waitlist?: boolean }) {
   return (
     <section className="min-h-screen flex flex-col pt-16">
       {/* Hero - full-width centered */}
@@ -22,15 +23,28 @@ export function LandingHero() {
         </p>
 
         <div>
-          <Link
-            href="/signup"
-            className="inline-block bg-black text-peach text-sm font-bold tracking-widest px-10 py-4 hover:bg-black/80 transition-colors uppercase"
-          >
-            Get Your Benchmarks - Free
-          </Link>
-          <p className="mt-4 text-xs text-black/35 tracking-wide">
-            Read-only access · No credit card · 60-second setup
-          </p>
+          {waitlist ? (
+            <>
+              <WaitlistCTAButton className="inline-block bg-black text-peach text-sm font-bold tracking-widest px-10 py-4 hover:bg-black/80 transition-colors uppercase">
+                Join the Waitlist
+              </WaitlistCTAButton>
+              <p className="mt-4 text-xs text-black/35 tracking-wide">
+                Be the first to know when we launch.
+              </p>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/signup"
+                className="inline-block bg-black text-peach text-sm font-bold tracking-widest px-10 py-4 hover:bg-black/80 transition-colors uppercase"
+              >
+                Get Your Benchmarks - Free
+              </Link>
+              <p className="mt-4 text-xs text-black/35 tracking-wide">
+                Read-only access · No credit card · 60-second setup
+              </p>
+            </>
+          )}
         </div>
       </div>
 
