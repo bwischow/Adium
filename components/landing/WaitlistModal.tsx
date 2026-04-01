@@ -10,6 +10,8 @@ export function WaitlistModal() {
   const [email, setEmail] = useState('')
   const [company, setCompany] = useState('')
   const [industry, setIndustry] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const open = useCallback(() => setIsOpen(true), [])
 
@@ -36,11 +38,34 @@ export function WaitlistModal() {
     setEmail('')
     setCompany('')
     setIndustry('')
+    setError(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSubmitted(true)
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, company, industry }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Something went wrong. Please try again.')
+        return
+      }
+
+      setSubmitted(true)
+    } catch {
+      setError('Network error. Please check your connection and try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (!isOpen) return null
@@ -97,6 +122,12 @@ export function WaitlistModal() {
               <h2 className="text-xs font-bold text-black tracking-widest">Join The Waitlist</h2>
             </div>
 
+            {error && (
+              <div className="bg-red-900/30 border border-red-500/50 text-red-400 px-4 py-3 mb-4 text-xs tracking-wide">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-white/50 mb-1 tracking-widest">Name</label>
@@ -105,6 +136,7 @@ export function WaitlistModal() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   required
+                  disabled={loading}
                   className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
                   placeholder="Jane Smith"
                 />
@@ -116,6 +148,7 @@ export function WaitlistModal() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                   className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
                   placeholder="email@company.com"
                 />
@@ -127,6 +160,7 @@ export function WaitlistModal() {
                   value={company}
                   onChange={e => setCompany(e.target.value)}
                   required
+                  disabled={loading}
                   className="w-full border border-white/20 bg-transparent px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach placeholder:text-white/20"
                   placeholder="Acme Inc."
                 />
@@ -137,6 +171,7 @@ export function WaitlistModal() {
                   value={industry}
                   onChange={e => setIndustry(e.target.value)}
                   required
+                  disabled={loading}
                   className="w-full border border-white/20 bg-void px-4 py-2.5 text-sm text-white focus:outline-none focus:border-peach appearance-none"
                 >
                   <option value="" disabled className="bg-void text-white/40">
@@ -151,9 +186,10 @@ export function WaitlistModal() {
               </div>
               <button
                 type="submit"
-                className="w-full bg-peach text-black py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark transition-colors"
+                disabled={loading}
+                className="w-full bg-peach text-black py-2.5 text-xs font-bold tracking-widest hover:bg-peach-dark disabled:opacity-60 transition-colors"
               >
-                Join The Waitlist
+                {loading ? 'Submitting\u2026' : 'Join The Waitlist'}
               </button>
             </form>
           </>
