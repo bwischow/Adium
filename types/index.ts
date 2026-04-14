@@ -48,6 +48,7 @@ export interface DailyMetric {
   clicks: number
   spend: number
   conversions: number
+  all_conversions: number
   conversion_value: number
   leads: number
   pulled_at: string

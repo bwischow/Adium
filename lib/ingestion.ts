@@ -58,6 +58,7 @@ export async function pullDailyMetrics(
     conversions:      r.conversions,
     conversion_value: r.conversion_value,
     leads:            r.leads,
+    all_conversions:  r.all_conversions,
     pulled_at:        new Date().toISOString(),
   }))
 
@@ -81,6 +82,7 @@ interface DailyRow {
   conversions: number
   conversion_value: number
   leads: number
+  all_conversions: number
 }
 
 // ---------------------------------------------------------------------------
@@ -103,7 +105,8 @@ async function fetchGoogleAdsMetrics(
       metrics.clicks,
       metrics.cost_micros,
       metrics.conversions,
-      metrics.conversions_value
+      metrics.conversions_value,
+      metrics.all_conversions
     FROM customer
     WHERE segments.date BETWEEN '${format(startDate, 'yyyy-MM-dd')}' AND '${format(endDate, 'yyyy-MM-dd')}'
     ORDER BY segments.date ASC
@@ -142,6 +145,7 @@ async function fetchGoogleAdsMetrics(
     conversions:      Number(r.metrics.conversions ?? 0),
     conversion_value: Number(r.metrics.conversionsValue ?? 0),
     leads:            0,  // Google Ads leads tracked via conversions
+    all_conversions:  Number(r.metrics.allConversions ?? 0),
   }))
 }
 
@@ -187,7 +191,8 @@ export async function pullGoogleAdsForAccount(account: {
       metrics.clicks,
       metrics.cost_micros,
       metrics.conversions,
-      metrics.conversions_value
+      metrics.conversions_value,
+      metrics.all_conversions
     FROM customer
     WHERE segments.date BETWEEN '${format(startDate, 'yyyy-MM-dd')}' AND '${format(endDate, 'yyyy-MM-dd')}'
     ORDER BY segments.date ASC
@@ -222,6 +227,7 @@ export async function pullGoogleAdsForAccount(account: {
     conversions:      Number(r.metrics.conversions ?? 0),
     conversion_value: Number(r.metrics.conversionsValue ?? 0),
     leads:            0,  // Google Ads leads tracked via conversions
+    all_conversions:  Number(r.metrics.allConversions ?? 0),
   }))
 
   if (rows.length === 0) return
@@ -239,6 +245,7 @@ export async function pullGoogleAdsForAccount(account: {
         conversions:      r.conversions,
         conversion_value: r.conversion_value,
         leads:            r.leads,
+        all_conversions:  r.all_conversions,
         pulled_at:        new Date().toISOString(),
       })),
       { onConflict: 'ad_account_id,date' }
@@ -315,6 +322,7 @@ async function fetchMetaMetrics(
     conversions:      extractConversions(item.actions),
     conversion_value: extractConversionValue(item.action_values),
     leads:            extractLeads(item.actions),
+    all_conversions:  0,
   }))
 }
 
@@ -459,6 +467,7 @@ async function fetchLinkedInAdsMetrics(
       conversions:      Number(el.externalWebsiteConversions ?? 0),
       conversion_value: 0,  // LinkedIn API does not provide conversion value/revenue
       leads:            Number(el.oneClickLeads ?? 0),
+      all_conversions:  0,
     }
   })
 }
@@ -577,6 +586,7 @@ async function fetchTikTokAdsMetrics(
       conversions:      Number(metrics.conversion ?? 0),
       conversion_value: Number(metrics.total_purchase_value ?? 0),
       leads:            0,
+      all_conversions:  0,
     }
   })
 }

@@ -9,6 +9,7 @@ interface MetricSnapshot {
   clicks: number
   spend: number
   conversions: number
+  all_conversions: number
   conversion_value: number
   ctr: number | null
   cpc: number | null

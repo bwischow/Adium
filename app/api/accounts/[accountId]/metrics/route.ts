@@ -15,6 +15,7 @@ export interface MetricSnapshot {
   clicks: number
   spend: number
   conversions: number
+  all_conversions: number
   conversion_value: number
   leads: number
   ctr: number | null
@@ -31,6 +32,7 @@ function computeSnapshot(rows: any[]): MetricSnapshot {
   const clicks           = rows.reduce((s, r) => s + Number(r.clicks ?? 0), 0)
   const spend            = rows.reduce((s, r) => s + Number(r.spend ?? 0), 0)
   const conversions      = rows.reduce((s, r) => s + Number(r.conversions ?? 0), 0)
+  const all_conversions  = rows.reduce((s, r) => s + Number(r.all_conversions ?? 0), 0)
   const conversion_value = rows.reduce((s, r) => s + Number(r.conversion_value ?? 0), 0)
   const leads            = rows.reduce((s, r) => s + Number(r.leads ?? 0), 0)
 
@@ -39,6 +41,7 @@ function computeSnapshot(rows: any[]): MetricSnapshot {
     clicks,
     spend,
     conversions,
+    all_conversions,
     conversion_value,
     leads,
     ctr: impressions > 0 ? clicks / impressions : null,
@@ -83,7 +86,7 @@ export async function GET(
   // Fetch current period
   const { data: currentRows } = await supabase
     .from('daily_metrics')
-    .select('impressions, clicks, spend, conversions, conversion_value, leads')
+    .select('impressions, clicks, spend, conversions, all_conversions, conversion_value, leads')
     .eq('ad_account_id', params.accountId)
     .gte('date', startDate)
     .lte('date', endDate)
@@ -99,7 +102,7 @@ export async function GET(
 
     const { data: prevRows } = await supabase
       .from('daily_metrics')
-      .select('impressions, clicks, spend, conversions, conversion_value, leads')
+      .select('impressions, clicks, spend, conversions, all_conversions, conversion_value, leads')
       .eq('ad_account_id', params.accountId)
       .gte('date', prevStart)
       .lte('date', prevEnd)
