@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         </Link>
 
         <h1 className="text-3xl font-bold text-gray-900 mt-6 mb-2">Privacy Policy</h1>
-        <p className="text-sm text-gray-400 mb-10">Last updated: March 13, 2026</p>
+        <p className="text-sm text-gray-400 mb-10">Last updated: March 24, 2026</p>
 
         <div className="space-y-8">
           <section>
@@ -48,15 +48,17 @@ export default function PrivacyPage() {
 
             <h3 className="text-lg font-medium text-gray-800 mt-4 mb-2">Ad Platform Data</h3>
             <p className="text-gray-600 leading-relaxed">
-              When you connect your Google Ads or Meta Ads accounts via OAuth, we access read-only
+              When you connect your ad platform accounts via OAuth, we access read-only
               performance metrics including impressions, clicks, spend, conversions, and conversion
-              value. We do <strong>not</strong> access:
+              value. We support connections to Google Ads, Meta Ads, LinkedIn Ads, and TikTok Ads.
+              We do <strong>not</strong> access:
             </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-1 leading-relaxed mt-2">
               <li>Your ad creative content or copy</li>
               <li>Audience targeting settings</li>
               <li>Billing or payment information</li>
               <li>Personal data of the people who see your ads</li>
+              <li>Campaign management or configuration settings</li>
             </ul>
 
             <h3 className="text-lg font-medium text-gray-800 mt-4 mb-2">OAuth Tokens</h3>
@@ -74,6 +76,9 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">How We Use Your Information</h2>
+            <p className="text-gray-600 leading-relaxed mb-2">
+              We process your data for the following purposes:
+            </p>
             <ul className="list-disc pl-6 text-gray-600 space-y-1 leading-relaxed">
               <li>To pull your ad performance metrics and display them on your dashboard</li>
               <li>
@@ -83,6 +88,90 @@ export default function PrivacyPage() {
               <li>To authenticate you and manage your account</li>
               <li>To improve, maintain, and secure the service</li>
             </ul>
+            <p className="text-gray-600 leading-relaxed mt-3">
+              We do <strong>not</strong> use your data for advertising, profiling, building user
+              profiles, or any purpose other than providing and improving the Adium benchmarking
+              service.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">
+              Platform-Specific Data Handling
+            </h2>
+
+            <h3 className="text-lg font-medium text-gray-800 mt-4 mb-2">Meta (Facebook) Platform Data</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Data received from Meta APIs is used solely for the purpose of providing ad
+              performance benchmarks to you. We comply with the{' '}
+              <a
+                href="https://developers.facebook.com/terms/"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Meta Platform Terms
+              </a>{' '}
+              and{' '}
+              <a
+                href="https://developers.facebook.com/devpolicy/"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Developer Policies
+              </a>
+              . Specifically:
+            </p>
+            <ul className="list-disc pl-6 text-gray-600 space-y-1 leading-relaxed mt-2">
+              <li>We request only the <code className="text-sm bg-gray-100 px-1 rounded">ads_read</code> permission (read-only access to ad account metrics).</li>
+              <li>We do not sell, license, or transfer Meta Platform Data to any third party.</li>
+              <li>We do not use Meta Platform Data to build or augment user profiles.</li>
+              <li>We do not use Meta Platform Data for surveillance, discrimination, or eligibility determinations.</li>
+              <li>Meta Platform Data is deleted when you disconnect your account, request deletion, or when no longer needed for the benchmarking service.</li>
+            </ul>
+
+            <h3 className="text-lg font-medium text-gray-800 mt-4 mb-2">Google Ads Data</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Our use of Google Ads data is subject to the{' '}
+              <a
+                href="https://developers.google.com/terms/api-services-user-data-policy"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Google API Services User Data Policy
+              </a>
+              .
+            </p>
+
+            <h3 className="text-lg font-medium text-gray-800 mt-4 mb-2">LinkedIn Ads Data</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Our use of LinkedIn Ads data is subject to the{' '}
+              <a
+                href="https://legal.linkedin.com/api-terms-of-use"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                LinkedIn API Terms of Use
+              </a>
+              .
+            </p>
+
+            <h3 className="text-lg font-medium text-gray-800 mt-4 mb-2">TikTok Ads Data</h3>
+            <p className="text-gray-600 leading-relaxed">
+              Our use of TikTok Ads data is subject to the{' '}
+              <a
+                href="https://ads.tiktok.com/marketing_api/docs?id=1701890925754369"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                TikTok for Business Developer Terms
+              </a>
+              .
+            </p>
           </section>
 
           <section>
@@ -101,7 +190,8 @@ export default function PrivacyPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Data Sharing</h2>
             <ul className="list-disc pl-6 text-gray-600 space-y-2 leading-relaxed">
               <li>
-                <strong>We do not sell your data.</strong>
+                <strong>We do not sell your data.</strong> We do not sell, license, or purchase
+                any Platform Data received from ad platforms.
               </li>
               <li>We do not share individual account data with third parties.</li>
               <li>
@@ -111,35 +201,125 @@ export default function PrivacyPage() {
               <li>
                 We share data with service providers who process data on our behalf under contractual
                 obligations, including Supabase (database and authentication) and Vercel (hosting).
+                These service providers are contractually required to use your data only for
+                providing their services to us and to maintain its confidentiality.
               </li>
             </ul>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">
+              Law Enforcement and Government Data Requests
+            </h2>
+            <p className="text-gray-600 leading-relaxed mb-3">
+              We are committed to protecting the privacy of our users when responding to requests
+              from law enforcement agencies, government bodies, or other public authorities for
+              personal data or personal information. We have the following policies and processes
+              in place:
+            </p>
+            <ul className="list-disc pl-6 text-gray-600 space-y-2 leading-relaxed">
+              <li>
+                <strong>Legality review:</strong> All requests from public authorities for user data
+                are reviewed for legal validity and sufficiency before any information is disclosed.
+                We require that requests be made through proper legal channels and comply with
+                applicable laws.
+              </li>
+              <li>
+                <strong>Challenging unlawful requests:</strong> We will challenge or refuse requests
+                that we believe to be unlawful, overbroad, or otherwise inappropriate. This includes
+                requests that lack proper legal basis, fail to follow required procedures, or seek
+                data beyond the scope of legitimate authority.
+              </li>
+              <li>
+                <strong>Data minimization:</strong> When we are legally required to disclose user
+                data, we limit disclosure to the minimum information necessary to comply with the
+                specific request. We do not provide bulk or unrestricted access to user data.
+              </li>
+              <li>
+                <strong>Documentation:</strong> We maintain records of all requests received from
+                public authorities, including the nature of each request, our response, the legal
+                reasoning behind our decisions, and the actors involved.
+              </li>
+            </ul>
+            <p className="text-gray-600 leading-relaxed mt-3">
+              Where permitted by law, we will notify affected users of requests for their data. For
+              questions about our law enforcement request policies, contact{' '}
+              <a
+                href="mailto:legal@adium.com"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                legal@adium.com
+              </a>
+              .
+            </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Data Storage and Security</h2>
             <p className="text-gray-600 leading-relaxed">
               Your data is stored in Supabase (PostgreSQL) with row-level security policies. OAuth
-              tokens are encrypted at rest. The service is hosted on Vercel with HTTPS encryption in
-              transit. Access is restricted by authentication and authorization checks at the
-              middleware and API level.
+              tokens are encrypted at rest using Supabase Vault. The service is hosted on Vercel
+              with HTTPS encryption in transit. Access is restricted by authentication and
+              authorization checks at the middleware and API level. We maintain administrative,
+              physical, and technical safeguards designed to protect against unauthorized access,
+              destruction, loss, alteration, or disclosure of your data.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">Data Retention</h2>
+            <p className="text-gray-600 leading-relaxed">
+              We retain your ad performance metrics for as long as your ad account is actively
+              connected and your Adium account is active. When you deactivate an ad account
+              connection (stopping new data pulls), we retain existing metrics for up to 90 days
+              to allow you to reactivate and resume benchmarking. After 90 days of inactivity,
+              metrics for deactivated accounts are automatically deleted. When you disconnect an
+              account or delete your account, all associated data (metrics and tokens) is deleted
+              immediately.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Your Rights and Choices</h2>
-            <ul className="list-disc pl-6 text-gray-600 space-y-1 leading-relaxed">
+            <p className="text-gray-600 leading-relaxed mb-2">
+              You have the following rights regarding your data:
+            </p>
+            <ul className="list-disc pl-6 text-gray-600 space-y-2 leading-relaxed">
               <li>
-                You can disconnect ad accounts at any time, which stops data collection for those
-                accounts.
+                <strong>Disconnect accounts:</strong> You can disconnect any ad account from your
+                company settings at any time. This permanently deletes the account connection and
+                all associated metrics.
               </li>
               <li>
-                You can request deletion of your account and all associated data by contacting us.
+                <strong>Delete account data:</strong> You can delete individual ad accounts and
+                their data from the Connected Accounts tab in your company settings.
               </li>
               <li>
-                You can revoke Adium&rsquo;s OAuth access directly from your Google or Meta account
-                settings at any time.
+                <strong>Request full account deletion:</strong> You can request deletion of your
+                entire Adium account and all associated data by emailing{' '}
+                <a
+                  href="mailto:privacy@adium.com"
+                  className="text-brand-600 hover:text-brand-700 transition-colors"
+                >
+                  privacy@adium.com
+                </a>
+                .
+              </li>
+              <li>
+                <strong>Revoke OAuth access:</strong> You can revoke Adium&rsquo;s access directly
+                from your Google, Meta, LinkedIn, or TikTok account settings at any time.
               </li>
             </ul>
+            <p className="text-gray-600 leading-relaxed mt-3">
+              For detailed instructions on how to delete your data, visit our{' '}
+              <Link
+                href="/data-deletion"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                Data Deletion page
+              </Link>
+              .
+            </p>
           </section>
 
           <section>
@@ -151,6 +331,8 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 text-gray-600 space-y-1 leading-relaxed">
               <li>Google Ads API - subject to Google&rsquo;s API Services User Data Policy</li>
               <li>Meta Marketing API - subject to Meta&rsquo;s Platform Terms</li>
+              <li>LinkedIn Marketing API - subject to LinkedIn&rsquo;s API Terms of Use</li>
+              <li>TikTok Business API - subject to TikTok&rsquo;s Developer Terms</li>
               <li>Supabase - database and authentication provider</li>
               <li>Vercel - hosting provider</li>
             </ul>
@@ -168,12 +350,20 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">Contact Us</h2>
             <p className="text-gray-600 leading-relaxed">
-              If you have questions about this Privacy Policy, please contact us at{' '}
+              If you have questions about this Privacy Policy or want to exercise your data rights,
+              please contact us at{' '}
               <a
                 href="mailto:privacy@adium.com"
                 className="text-brand-600 hover:text-brand-700 transition-colors"
               >
                 privacy@adium.com
+              </a>
+              . For security vulnerabilities, contact{' '}
+              <a
+                href="mailto:security@adium.com"
+                className="text-brand-600 hover:text-brand-700 transition-colors"
+              >
+                security@adium.com
               </a>
               .
             </p>

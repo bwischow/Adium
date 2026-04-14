@@ -9,7 +9,7 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { subDays, format } from 'date-fns'
-import { pullGoogleAdsForAccount, pullDailyMetrics } from './ingestion'
+import { pullGoogleAdsForAccount, pullLinkedInAdsForAccount, pullTikTokAdsForAccount, pullDailyMetrics } from './ingestion'
 import { deriveMetric } from './metrics'
 import type { MetricName, Platform } from '@/types'
 
@@ -22,6 +22,15 @@ function getServiceClient() {
 
 const METRICS: MetricName[] = ['cpc', 'cpm', 'ctr', 'roas', 'cpa', 'cpl']
 const LOWER_IS_BETTER: MetricName[] = ['cpc', 'cpm', 'cpa', 'cpl']
+const CONCURRENCY = 10
+
+/** Process items in parallel chunks of `size`. */
+async function inChunks<T>(items: T[], size: number, fn: (item: T) => Promise<void>): Promise<void> {
+  for (let i = 0; i < items.length; i += size) {
+    const chunk = items.slice(i, i + size)
+    await Promise.allSettled(chunk.map(fn))
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Step 1 — Data pull
@@ -37,20 +46,27 @@ export async function runDataPull(): Promise<void> {
 
   if (error) throw error
 
-  for (const account of accounts ?? []) {
+  await inChunks(accounts ?? [], CONCURRENCY, async (account) => {
     try {
-      if (account.platform === 'google_ads') {
-        await pullGoogleAdsForAccount(account)
-      } else {
-        // Meta — use the shared pullDailyMetrics which has proper error
-        // handling and conversion matching
-        await pullDailyMetrics(
-          account.id,
-          'meta',
-          account.access_token,
-          account.platform_account_id,
-          1,  // nightly: just yesterday
-        )
+      switch (account.platform) {
+        case 'google_ads':
+          await pullGoogleAdsForAccount(account)
+          break
+        case 'meta':
+          await pullDailyMetrics(
+            account.id,
+            'meta',
+            account.access_token,
+            account.platform_account_id,
+            1,
+          )
+          break
+        case 'linkedin_ads':
+          await pullLinkedInAdsForAccount(account)
+          break
+        case 'tiktok_ads':
+          await pullTikTokAdsForAccount(account)
+          break
       }
     } catch (err) {
       console.error(`[pipeline] data pull failed for account ${account.id}:`, err)
@@ -64,9 +80,8 @@ export async function runDataPull(): Promise<void> {
           .eq('id', account.id)
         console.warn(`[pipeline] Token expired for account ${account.id}, marked inactive`)
       }
-      // Continue with other accounts
     }
-  }
+  })
 }
 
 // ---------------------------------------------------------------------------
@@ -89,7 +104,7 @@ export async function runSpendTierCalculation(): Promise<void> {
 
   const spendMap: Map<string, { spend: number; industryId: number; platform: Platform }> = new Map()
 
-  for (const account of accounts) {
+  await inChunks(accounts, CONCURRENCY, async (account) => {
     const company = Array.isArray(account.company) ? account.company[0] : account.company
     const industryId: number = company?.industry_id ?? 8  // fallback: Other
 
@@ -106,7 +121,7 @@ export async function runSpendTierCalculation(): Promise<void> {
       industryId,
       platform:   account.platform as Platform,
     })
-  }
+  })
 
   // Group by industry × platform to compute quartile boundaries
   const groups = new Map<string, { id: string; spend: number }[]>()
@@ -270,6 +285,56 @@ export async function runBenchmarkAggregation(targetDate?: string): Promise<void
 
     console.log(`[pipeline] benchmark_cache updated: ${cacheRows.length} rows for ${date}`)
   }
+}
+
+// ---------------------------------------------------------------------------
+// Step 4 — Data retention cleanup
+// ---------------------------------------------------------------------------
+
+/**
+ * Delete metrics and accounts that have been deactivated for more than 90 days.
+ * This complies with Meta Platform Terms requiring deletion of Platform Data
+ * when it no longer serves a legitimate business purpose.
+ */
+export async function runRetentionCleanup(): Promise<void> {
+  const supabase = getServiceClient()
+
+  const ninetyDaysAgo = subDays(new Date(), 90).toISOString()
+
+  // Find deactivated accounts that haven't been active for 90+ days.
+  // We use the pulled_at timestamp from daily_metrics to determine
+  // when data was last pulled (i.e., when the account was last active).
+  const { data: staleAccounts, error } = await supabase
+    .from('ad_accounts')
+    .select('id')
+    .eq('is_active', false)
+    .lt('connected_at', ninetyDaysAgo)
+
+  if (error) {
+    console.error('[pipeline] retention cleanup query failed:', error.message)
+    return
+  }
+
+  if (!staleAccounts || staleAccounts.length === 0) {
+    console.log('[pipeline] retention cleanup: no stale accounts to clean up')
+    return
+  }
+
+  const ids = staleAccounts.map(a => a.id)
+
+  // Delete the accounts — ON DELETE CASCADE will remove daily_metrics
+  // and account_spend_tiers automatically.
+  const { error: deleteError } = await supabase
+    .from('ad_accounts')
+    .delete()
+    .in('id', ids)
+
+  if (deleteError) {
+    console.error('[pipeline] retention cleanup delete failed:', deleteError.message)
+    return
+  }
+
+  console.log(`[pipeline] retention cleanup: deleted ${ids.length} stale account(s) and their metrics`)
 }
 
 // ---------------------------------------------------------------------------

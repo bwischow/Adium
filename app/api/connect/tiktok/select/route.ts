@@ -3,11 +3,10 @@ import { createClient } from '@supabase/supabase-js'
 import { pullDailyMetrics } from '@/lib/ingestion'
 
 /**
- * POST /api/connect/meta/select
+ * POST /api/connect/tiktok/select
  *
- * Consumes a pending OAuth session: saves selected Meta ad accounts to the
- * database and kicks off an initial data pull. The session is marked
- * consumed immediately to prevent double-submit / replay.
+ * Consumes a pending OAuth session: saves selected TikTok ad accounts to the
+ * database and kicks off an initial data pull.
  */
 
 function getServiceClient() {
@@ -25,7 +24,6 @@ interface PendingSession {
   expires_in:    number | null
   accounts:      { id: string; name: string }[]
   consumed_at:   string | null
-  meta_user_id:  string | null
 }
 
 export async function POST(request: Request) {
@@ -42,12 +40,12 @@ export async function POST(request: Request) {
   // Fetch the pending session
   const { data: session, error: fetchError } = await supabase
     .from('pending_oauth_sessions')
-    .select('id, company_id, access_token, refresh_token, expires_in, accounts, consumed_at, meta_user_id')
+    .select('id, company_id, access_token, refresh_token, expires_in, accounts, consumed_at')
     .eq('id', sessionId)
     .single()
 
   if (fetchError || !session) {
-    console.error('[meta/select] Session not found:', sessionId, fetchError?.message)
+    console.error('[tiktok/select] Session not found:', sessionId, fetchError?.message)
     return NextResponse.json({ error: 'Session not found or expired' }, { status: 404 })
   }
 
@@ -63,7 +61,7 @@ export async function POST(request: Request) {
     .is('consumed_at', null)
 
   if (updateError) {
-    console.error('[meta/select] Failed to mark session consumed:', updateError)
+    console.error('[tiktok/select] Failed to mark session consumed:', updateError)
     return NextResponse.json({ error: 'Failed to consume session' }, { status: 500 })
   }
 
@@ -82,33 +80,30 @@ export async function POST(request: Request) {
       .from('ad_accounts')
       .upsert({
         company_id:          pending.company_id,
-        platform:            'meta',
+        platform:            'tiktok_ads',
         platform_account_id: account.id,
         account_name:        account.name,
         access_token:        pending.access_token,
-        refresh_token:       null,
+        refresh_token:       pending.refresh_token,
         token_expires_at:    pending.expires_in
           ? new Date(Date.now() + pending.expires_in * 1000).toISOString()
           : null,
         is_active:           true,
-        meta_user_id:        pending.meta_user_id,
       }, { onConflict: 'platform,platform_account_id' })
       .select()
       .single()
 
     if (savedAccount) {
       try {
-        // Pull last 30 days of metrics on initial connect so there's
-        // meaningful data for benchmarks right away
         await pullDailyMetrics(
           savedAccount.id,
-          'meta',
+          'tiktok_ads',
           pending.access_token,
           account.id,
           30,
         )
       } catch (err) {
-        console.error(`[meta/select] Initial pull failed for ${account.id}:`, err)
+        console.error(`[tiktok/select] Initial pull failed for ${account.id}:`, err)
       }
     }
   }

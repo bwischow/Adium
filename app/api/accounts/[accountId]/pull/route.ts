@@ -38,26 +38,60 @@ export async function POST(
 
   let accessToken = account.access_token
 
-  // Refresh token if expired (Google Ads)
+  // Refresh token if expired
   if (
-    account.platform === 'google_ads' &&
     account.token_expires_at &&
     new Date(account.token_expires_at) < new Date() &&
     account.refresh_token
   ) {
-    const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        refresh_token: account.refresh_token,
-        client_id:     process.env.GOOGLE_ADS_CLIENT_ID!,
-        client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET!,
-        grant_type:    'refresh_token',
-      }),
-    })
-    const refreshData = await refreshRes.json()
-    if (refreshData.access_token) {
-      accessToken = refreshData.access_token
+    let newToken: string | null = null
+    let newExpiresMs = 3600 * 1000 // default 1 hour
+
+    if (account.platform === 'google_ads') {
+      const refreshRes = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          refresh_token: account.refresh_token,
+          client_id:     process.env.GOOGLE_ADS_CLIENT_ID!,
+          client_secret: process.env.GOOGLE_ADS_CLIENT_SECRET!,
+          grant_type:    'refresh_token',
+        }),
+      })
+      const refreshData = await refreshRes.json()
+      newToken = refreshData.access_token ?? null
+    } else if (account.platform === 'linkedin_ads') {
+      const refreshRes = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type:    'refresh_token',
+          refresh_token: account.refresh_token,
+          client_id:     process.env.LINKEDIN_ADS_CLIENT_ID!,
+          client_secret: process.env.LINKEDIN_ADS_CLIENT_SECRET!,
+        }),
+      })
+      const refreshData = await refreshRes.json()
+      newToken = refreshData.access_token ?? null
+      newExpiresMs = 60 * 24 * 60 * 60 * 1000 // ~60 days
+    } else if (account.platform === 'tiktok_ads') {
+      const refreshRes = await fetch('https://business-api.tiktok.com/open_api/v1.3/oauth2/access_token/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          app_id:        process.env.TIKTOK_ADS_APP_ID!,
+          secret:        process.env.TIKTOK_ADS_APP_SECRET!,
+          grant_type:    'refresh_token',
+          refresh_token: account.refresh_token,
+        }),
+      })
+      const refreshData = await refreshRes.json()
+      newToken = refreshData.data?.access_token ?? null
+      newExpiresMs = (refreshData.data?.expires_in ?? 86400) * 1000
+    }
+
+    if (newToken) {
+      accessToken = newToken
       const svc = createServiceClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -66,7 +100,7 @@ export async function POST(
         .from('ad_accounts')
         .update({
           access_token: accessToken,
-          token_expires_at: new Date(Date.now() + 3600 * 1000).toISOString(),
+          token_expires_at: new Date(Date.now() + newExpiresMs).toISOString(),
         })
         .eq('id', account.id)
     }

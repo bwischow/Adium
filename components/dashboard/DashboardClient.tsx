@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import BenchmarkChart from './BenchmarkChart'
 import MetricTabs from './MetricTabs'
 import MetricSummaryCards from './MetricSummaryCards'
+import RawMetricsTiles from './RawMetricsTiles'
 import DateRangePicker from './DateRangePicker'
 import CompanySidebar from './CompanySidebar'
 import type { Company, AdAccount, MetricName, DashboardData } from '@/types'
@@ -25,6 +26,7 @@ interface MetricSnapshot {
   clicks: number
   spend: number
   conversions: number
+  all_conversions: number
   conversion_value: number
   ctr: number | null
   cpc: number | null
@@ -236,6 +238,9 @@ export default function DashboardClient({ companies }: Props) {
             <EmptyState type="no-data" />
           ) : (
             <>
+              {summary && (
+                <RawMetricsTiles current={summary.current} />
+              )}
               {summary && (
                 <MetricSummaryCards
                   current={summary.current}

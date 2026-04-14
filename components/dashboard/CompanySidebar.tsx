@@ -22,7 +22,15 @@ export default function CompanySidebar({
   onAccountChange,
   onLogout,
 }: Props) {
-  const platformLabel = (p: string) => p === 'google_ads' ? 'Google Ads' : 'Meta Ads'
+  const platformLabel = (p: string) => {
+    switch (p) {
+      case 'google_ads':   return 'Google Ads'
+      case 'meta':         return 'Meta Ads'
+      case 'linkedin_ads': return 'LinkedIn Ads'
+      case 'tiktok_ads':   return 'TikTok Ads'
+      default:             return p
+    }
+  }
 
   return (
     <aside className="w-60 flex-shrink-0 bg-terminal border-r border-black flex flex-col h-full">

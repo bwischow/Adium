@@ -110,66 +110,23 @@ export async function GET(request: Request) {
   const accountsData = await accountsRes.json()
   const adAccounts: { id: string; name: string }[] = accountsData.data ?? []
 
-  // ── Step 3b: Log granted scopes on the user token ──────────────
-  const debugRes = await fetch(
-    `https://graph.facebook.com/v25.0/me?fields=id,name&access_token=${accessToken}`
-  )
-  const debugBody = debugRes.ok ? await debugRes.json() : null
-  console.log(`[meta/callback] User token /me response:`, JSON.stringify(debugBody))
-
-  // ── Step 3c: Fetch the user's Pages (pages_show_list) ─────────
-  const pagesRes = await fetch(
-    `https://graph.facebook.com/v25.0/me/accounts?fields=id,name,access_token&access_token=${accessToken}`
-  )
-  const pagesData = pagesRes.ok ? await pagesRes.json() : { data: [] }
-  const pages: { id: string; name: string; access_token?: string }[] = pagesData.data ?? []
-  console.log(`[meta/callback] /me/accounts response (${pagesRes.status}):`, JSON.stringify(pagesData, null, 2))
-
-  // ── Step 3d–3f: Exercise Page permissions ─────────────────────
-  if (pages.length > 0 && pages[0].access_token) {
-    const pageId    = pages[0].id
-    const pageToken = pages[0].access_token
-
-    // pages_read_engagement - read Page fields (fan_count, followers_count)
-    const pageFieldsRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pageId}?fields=id,name,fan_count,followers_count,link&access_token=${pageToken}`
-    )
-    const pageFieldsBody = await pageFieldsRes.json()
-    console.log(`[meta/callback] pages_read_engagement - Page fields (${pageFieldsRes.status}):`, JSON.stringify(pageFieldsBody, null, 2))
-
-    // pages_read_engagement - read Page posts
-    const postsRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pageId}/posts?fields=id,message,created_time,permalink_url&limit=5&access_token=${pageToken}`
-    )
-    const postsBody = await postsRes.json()
-    console.log(`[meta/callback] pages_read_engagement - Page posts (${postsRes.status}):`, JSON.stringify(postsBody, null, 2))
-
-    // pages_manage_metadata - subscribe app to Page webhooks
-    const metaRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pageId}/subscribed_apps`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subscribed_fields: ['feed'],
-          access_token: pageToken,
-        }),
-      }
-    )
-    console.log(`[meta/callback] pages_manage_metadata (${metaRes.status}):`, await metaRes.text())
-
-    // pages_manage_ads - read ad posts for the Page
-    const adsRes = await fetch(
-      `https://graph.facebook.com/v25.0/${pageId}/ads_posts?fields=id,message&limit=1&access_token=${pageToken}`
-    )
-    console.log(`[meta/callback] pages_manage_ads (${adsRes.status}):`, await adsRes.text())
-  } else {
-    console.log('[meta/callback] No Pages with access tokens - Page permission calls skipped')
-  }
-
   if (adAccounts.length === 0) {
     console.error('[meta/callback] No ad accounts found for this Meta user')
     return errorRedirect('no_accounts_found')
+  }
+
+  // ── Step 3b: Fetch Meta user ID (needed for deauthorize/deletion callbacks)
+  let metaUserId: string | null = null
+  try {
+    const meRes = await fetch(
+      `https://graph.facebook.com/v25.0/me?fields=id&access_token=${accessToken}`
+    )
+    if (meRes.ok) {
+      const meData = await meRes.json()
+      metaUserId = meData.id ?? null
+    }
+  } catch (err) {
+    console.warn('[meta/callback] Failed to fetch Meta user ID:', err)
   }
 
   // ── Step 4: Store pending session in Supabase ─────────────────
@@ -185,6 +142,7 @@ export async function GET(request: Request) {
       refresh_token: null,
       expires_in:    60 * 24 * 60 * 60, // ~60 days in seconds
       accounts:      adAccounts,
+      meta_user_id:  metaUserId,
     })
     .select('id')
     .single()

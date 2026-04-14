@@ -9,7 +9,7 @@ export function LandingFooter() {
             &copy; {new Date().getFullYear()} ADIUM
           </span>
           <span className="text-xs text-white/20 tracking-wide">
-            Google Ads and Meta Ads supported. Additional platforms coming soon.
+            Google Ads, Meta Ads, LinkedIn Ads, and TikTok Ads supported.
           </span>
         </div>
         <div className="flex items-center gap-4">
@@ -24,6 +24,12 @@ export function LandingFooter() {
             className="text-xs text-white/30 hover:text-white/50 transition-colors tracking-widest uppercase"
           >
             Terms
+          </Link>
+          <Link
+            href="/support"
+            className="text-xs text-white/30 hover:text-white/50 transition-colors tracking-widest uppercase"
+          >
+            Support
           </Link>
           <Link
             href="/login"

@@ -1,0 +1,7 @@
+# Adium Security Contact
+# https://securitytxt.org/
+
+Contact: mailto:security@adium.com
+Preferred-Languages: en
+Canonical: https://adium.com/.well-known/security.txt
+Expires: 2027-03-24T00:00:00.000Z

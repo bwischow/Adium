@@ -196,8 +196,24 @@ export default function CompanySettingsPage() {
     }
   }
 
-  const platformLabel = (p: string) => p === 'google_ads' ? 'Google Ads' : 'Meta Ads'
-  const platformIcon  = (p: string) => p === 'google_ads' ? '🔵' : '🔷'
+  const platformLabel = (p: string) => {
+    switch (p) {
+      case 'google_ads':   return 'Google Ads'
+      case 'meta':         return 'Meta Ads'
+      case 'linkedin_ads': return 'LinkedIn Ads'
+      case 'tiktok_ads':   return 'TikTok Ads'
+      default:             return p
+    }
+  }
+  const platformIcon = (p: string) => {
+    switch (p) {
+      case 'google_ads':   return 'G'
+      case 'meta':         return 'M'
+      case 'linkedin_ads': return 'Li'
+      case 'tiktok_ads':   return 'Tk'
+      default:             return '?'
+    }
+  }
 
   if (loading) {
     return (
@@ -379,7 +395,7 @@ export default function CompanySettingsPage() {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-lg">{platformIcon(account.platform)}</span>
+                      <span className="text-xs font-bold w-6 h-6 flex items-center justify-center bg-white/10 text-white/60">{platformIcon(account.platform)}</span>
                       <div>
                         <p className={`font-medium text-sm ${!account.is_active ? 'text-white/40' : 'text-white'}`}>
                           {account.account_name || platformLabel(account.platform)}
